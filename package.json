@@ -1,0 +1,19 @@
+{
+  "name": "hue-sync",
+  "version": "0.0.1",
+  "description": "A Library for Phillips Hue Clip API v2 written in Typescript",
+  "main": "build/index.js",
+  "scripts": {
+    "test": "jest ./src"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jdmg94/Hue-Sync.git"
+  },
+  "author": "José Muñoz",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/jdmg94/Hue-Sync/issues"
+  },
+  "homepage": "https://github.com/jdmg94/Hue-Sync#readme"
+}
