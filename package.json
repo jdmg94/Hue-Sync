@@ -4,7 +4,9 @@
   "description": "A Library for Phillips Hue Clip API v2 written in Typescript",
   "main": "build/index.js",
   "scripts": {
-    "test": "jest ./src"
+    "test": "jest src",
+    "lint": "prettier -w src",
+    "build": "swc src -d build"
   },
   "repository": {
     "type": "git",
@@ -15,5 +17,18 @@
   "bugs": {
     "url": "https://github.com/jdmg94/Hue-Sync/issues"
   },
-  "homepage": "https://github.com/jdmg94/Hue-Sync#readme"
+  "homepage": "https://github.com/jdmg94/Hue-Sync#readme",
+  "devDependencies": {
+    "@swc/cli": "^0.1.55",
+    "@swc/core": "^1.2.133",
+    "@swc/jest": "^0.2.17",
+    "@types/jest": "^27.4.0",
+    "fetch-mock": "^9.11.0",
+    "jest": "^27.4.7",
+    "prettier": "^2.5.1"
+  },
+  "dependencies": {
+    "node-dtls-client": "^1.0.1",
+    "node-fetch": "^3.2.0"
+  }
 }

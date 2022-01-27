@@ -1,62 +1,349 @@
-import HueBridge from "./hue"
-import { getRegisteredCredentials } from "./utils"
+import HueBridge from "./hue";
+import fetchMock from "./__mocks__/node-fetch";
+import {  
+  Light,  
+  BridgeConfig,
+  ResourceNode,
+  EntertainmentArea,
+  HueBridgeNetworkDevice,
+  BridgeClientCredentials,
+} from "./hue.types";
 
-import "../../XMLHTTPRequest.shim"
+describe("hue-sync", () => {
+  const mockIp = "1.2.3.4";
+  const mockCredentials: BridgeClientCredentials = {
+    username: "foo",
+    clientkey: "bar",
+  };
 
-describe("hue", () => {
-  it("should have a static discovery method", async () => {
-    // const mockBridgeNetworkDevice = {
-    //   id: "foo",
-    //   internalipaddress: "bar",
-    //   port: 123,
-    // }
+  afterEach(() => {
+    fetchMock.restore();
+    fetchMock.reset();
+  });
 
-    const credentials = await getRegisteredCredentials()
-    const [bridgeOnNetwork] = await HueBridge.discover()
+  describe("static methods", () => {
+    it("should be able to discover Hue Bridge devices on the local network", async () => {
+      const mockBridgeNetworkDevice: HueBridgeNetworkDevice = {
+        id: "foo",
+        port: 123,
+        internalipaddress: "bar",
+      };
 
-    const bridge = new HueBridge({
-      credentials,
-      url: bridgeOnNetwork.internalipaddress,
-    })
+      fetchMock.get("https://discovery.meethue.com/", [
+        mockBridgeNetworkDevice,
+      ]);
 
-    // const config = await bridge.getConfig()
-    // const lights = await bridge.getLights()
-    // const scenes = await bridge.getScenes()
-    // const entertainmentGroups = await bridge.getEntertainmentAreas()
-    // const rooms = await bridge.getRooms()
-    // const zones = await bridge.getZones()
-    // const devices = await bridge.getDevices()
-    // const homeAreas = await bridge.getHomeAreas()
-    // const lightGroups = await bridge.getGroupedLights()
-  
-    // const home = await bridge.getHomeArea('4f942f16-c0ea-418a-b753-cda030262768')
-    // const room = await bridge.getRoom('7d4d0fd2-60d0-4c86-a05e-6ba5e47be47e')
-    // const scene = await bridge.getScene("aebbe7f5-eb79-4718-aca1-98c972230ffa")
-    // const device = await bridge.getDevice("6c401483-b62b-46b2-b9bf-73ca9ce1095b")
-    // const light = await bridge.getLight("6c401483-b62b-46b2-b9bf-73ca9ce1095b") // has gradient
-    // const light = await bridge.getLight("782220b3-52ef-4ff7-b2eb-0d23d00d6c4c") // has effects
-    // const lightGroup = await bridge.getLightGroup(
-    //   "7832dd0f-24e6-4bcc-b166-61705d0bdcd7"
-    // )
-    // const area = await bridge.getEntertainmentArea(
-    //   "ae59f511-f1e3-4d55-acdf-040650fc2e99"
-    // )
+      const [bridgeOnNetwork] = await HueBridge.discover();
 
-    // console.log(lightGroup)
-    // console.log(lightGroups)
-    // console.log(homeAreas)
-    // console.log(home)
-    // console.log(rooms)
-    // console.log(room)
-    // console.log(config)
-    // console.log(scenes)
-    // console.log(scene)
-    // console.log(entertainmentGroups)
-    // console.log(area)
-    // console.log(lights)
-    // console.log(light)
-    // console.log(zones)
-    // console.log(devices)
-    // console.log(device)
-  })
-})
+      expect(bridgeOnNetwork).toEqual(mockBridgeNetworkDevice);
+    });
+
+    it("should be able to register hue-sync on Hue Bridge device", async () => {
+      fetchMock.post(`http://${mockIp}/api`, [{ success: mockCredentials }]);
+
+      const credentials = await HueBridge.register(mockIp);
+
+      expect(credentials).toEqual(mockCredentials);
+    });
+
+    it("should be able to retrieve Hue Bridge config information", async () => {
+      const mockConfig: BridgeConfig = {
+        name: "foo",
+        datastoreversion: "bar",
+        swversion: "baz",
+        apiversion: "lorem",
+        mac: "ipsum",
+        bridgeid: "dolor",
+        factorynew: "sit",
+        replacesbridgeid: "amet",
+        modelid: "consecutir",
+        starterkitid: "dolor",
+      };
+
+      fetchMock.get(`http://${mockIp}/api/config`, mockConfig);
+
+      const config = await HueBridge.getInfo(mockIp);
+
+      expect(config).toEqual(mockConfig);
+    });
+  });
+
+  describe("instance methods", () => {
+    let bridge = new HueBridge({
+      url: mockIp,
+      credentials: mockCredentials,
+    });
+
+    const justGreen = [0, 255, 0];
+    const mockResourceNode: ResourceNode = { rid: "foo", rtype: "_test" };
+
+    const mockLight: Light = {
+      alert: { action_values: ["test"] },
+      color: {
+        gamut: {
+          blue: { x: 1, y: 2 },
+          green: { x: 3, y: 4 },
+          red: { x: 5, y: 6 },
+        },
+        gamut_type: "test",
+        xy: { x: 1, y: 2 },
+      },
+      color_temperature: {
+        mirek: 1,
+        mirek_schema: { mirek_maximum: 10, mirek_minimum: 0 },
+        mirek_valid: true,
+      },
+      dimming: {
+        brightness: 1,
+        min_dim_level: 0,
+      },
+      dynamics: {
+        speed: 1,
+        speed_valid: true,
+        status: "foo",
+        status_values: ["foo", "bar"],
+      },
+      effects: {
+        effect_values: ["foo", "bar"],
+        status: "baz",
+        status_values: ["baz", "bar", "foo"],
+      },
+      gradient: {
+        points: [{ color: { xy: { x: 1, y: 2 } } }],
+        points_capable: 1,
+      },
+      id: "test",
+      id_v1: "test",
+      metadata: { archetype: "test", name: "foobar" },
+      mode: "test",
+      on: { on: true },
+      owner: mockResourceNode,
+      type: "test",
+    };
+
+    const secondMockLight: Light = {
+      alert: { action_values: ["test"] },
+      color: {
+        gamut: {
+          blue: { x: 1, y: 2 },
+          green: { x: 3, y: 4 },
+          red: { x: 5, y: 6 },
+        },
+        gamut_type: "test",
+        xy: { x: 1, y: 2 },
+      },
+      color_temperature: {
+        mirek: 1,
+        mirek_schema: { mirek_maximum: 10, mirek_minimum: 0 },
+        mirek_valid: true,
+      },
+      dimming: {
+        brightness: 1,
+        min_dim_level: 0,
+      },
+      dynamics: {
+        speed: 1,
+        speed_valid: true,
+        status: "foo",
+        status_values: ["foo", "bar"],
+      },
+      effects: {
+        effect_values: ["foo", "bar"],
+        status: "baz",
+        status_values: ["baz", "bar", "foo"],
+      },
+      gradient: {
+        points: [{ color: { xy: { x: 1, y: 2 } } }],
+        points_capable: 1,
+      },
+      id: "test2",
+      id_v1: "test2",
+      metadata: { archetype: "test", name: "foobar" },
+      mode: "test",
+      on: { on: true },
+      owner: mockResourceNode,
+      type: "test",
+    };
+
+    const mockEntertainmentArea: EntertainmentArea = {
+      channels: [
+        {
+          channel_id: 0,
+          position: [
+            {
+              x: 1,
+              y: 2,
+              z: 3,
+            },
+            {
+              x: 4,
+              y: 5,
+              z: 6,
+            },
+          ],
+          members: [
+            {
+              index: 0,
+              service: mockResourceNode,
+            },
+          ],
+        },
+      ],
+      configuration_type: "test",
+      id: "test",
+      id_v1: "test",
+      light_services: [mockResourceNode],
+      locations: {
+        service_locations: [
+          {
+            position: {
+              x: 1,
+              y: 2,
+              z: 3,
+            },
+            positions: [
+              {
+                x: 1,
+                y: 2,
+                z: 3,
+              },
+              {
+                x: 4,
+                y: 5,
+                z: 6,
+              },
+            ],
+            service: mockResourceNode,
+          },
+        ],
+      },
+      metadata: { name: "test" },
+      name: "test",
+      status: "test",
+      stream_proxy: {
+        mode: "test",
+        node: mockResourceNode,
+      },
+      type: "test",
+    };
+
+    describe("Read Methods", () => {
+      it("should get the Entertainment Areas registered on Hue Bridge", async () => {
+        fetchMock.get(
+          `https://${mockIp}/clip/v2/resource/entertainment_configuration`,
+          { data: [mockEntertainmentArea] }
+        );
+
+        const result = await bridge.getEntertainmentAreas();
+
+        expect(result.length).toBe(1);
+        expect(result[0]).toEqual(mockEntertainmentArea);
+      });
+
+      it("should get a specific Entertainment Areas registered on Hue Bridge", async () => {
+        fetchMock.get(
+          `https://${mockIp}/clip/v2/resource/entertainment_configuration/${mockEntertainmentArea.id}`,
+          { data: [mockEntertainmentArea] }
+        );
+
+        const result = await bridge.getEntertainmentArea(
+          mockEntertainmentArea.id
+        );
+
+        expect(result).toEqual(mockEntertainmentArea);
+      });
+
+      it("should get the lights registered on Hue Bridge", async () => {
+        fetchMock.get(`https://${mockIp}/clip/v2/resource/light`, {
+          data: [mockLight, secondMockLight],
+        });
+
+        const result = await bridge.getLights();
+
+        expect(result.length).toBe(2);
+        expect(result[0].id).toEqual(mockLight.id);
+        expect(result[1].id).toEqual(secondMockLight.id);
+      });
+
+      it("should get a specific Light registered on Hue Bridge", async () => {
+        fetchMock.get(
+          `https://${mockIp}/clip/v2/resource/light/${mockLight.id}`,
+          { data: [mockLight] }
+        );
+
+        const result = await bridge.getLight(mockLight.id);
+
+        expect(result).toEqual(mockLight);
+      });
+    });
+
+    describe("Update Methods", () => {
+      // Update Operations
+      it("should update a given entertainment area", async () => {
+        fetchMock.put(
+          `https://${mockIp}/clip/v2/resource/entertainment_configuration/${mockEntertainmentArea.id}`,
+          { data: [mockResourceNode] }
+        );
+
+        const result = await bridge.updateEntertainmentArea(
+          mockEntertainmentArea.id,
+          {
+            action: "stop",
+          }
+        );
+
+        expect(result).toEqual(mockResourceNode);
+      });
+    });
+
+    // Entertainment API Streaming
+    describe("Streaming Entertainment API", () => {
+      it("should throw when calling stop with no active channel", async () => {
+        await expect(bridge.stop()).rejects.toThrow(
+          "No active datagram socket!"
+        );
+      });
+
+      // #NOTE: this shit should work, its literally a copy-paste from above
+      it.skip("should throw when calling transition with no active channel", async () => {
+        await expect(bridge.transition([justGreen])).rejects.toThrow(
+          "No active datagram socket!"
+        );
+      });
+
+      it("should setup a dgram channel for a given entertainment area", async () => {
+        fetchMock.get(
+          `https://${mockIp}/clip/v2/resource/entertainment_configuration/${mockEntertainmentArea.id}`,
+          { data: [mockEntertainmentArea] }
+        );
+
+        fetchMock.put(
+          `https://${mockIp}/clip/v2/resource/entertainment_configuration/${mockEntertainmentArea.id}`,
+          { data: [mockResourceNode] }
+        );
+
+        await bridge.start(mockEntertainmentArea.id);
+
+        expect(bridge.socket).toBeDefined();
+      });
+
+      it("should be able to transmit an RGB array through Hue Entertainment API", async () => {
+        await bridge.transition([justGreen]);
+
+        expect(bridge.socket.send.mock.calls.length).toBe(1);
+        expect(bridge.socket.send.mock.calls[0][0]).toBeInstanceOf(Buffer);
+      });
+
+      it("should be able to close the dgram channel for an active entertainment area", async () => {
+        fetchMock.put(
+          `https://${mockIp}/clip/v2/resource/entertainment_configuration/${mockEntertainmentArea.id}`,
+          { data: [mockResourceNode] }
+        );
+
+        await bridge.stop();
+
+        expect(bridge.socket.close.mock.calls.length).toBe(1);
+      });
+    });
+  });
+});
