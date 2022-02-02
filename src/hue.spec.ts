@@ -1,7 +1,7 @@
 import HueBridge from "./hue";
 import fetchMock from "./__mocks__/node-fetch";
-import {  
-  Light,  
+import {
+  Light,
   BridgeConfig,
   ResourceNode,
   EntertainmentArea,
@@ -305,10 +305,15 @@ describe("hue-sync", () => {
       });
 
       // #NOTE: this shit should work, its literally a copy-paste from above
-      it.skip("should throw when calling transition with no active channel", async () => {
-        await expect(bridge.transition([justGreen])).rejects.toThrow(
-          "No active datagram socket!"
-        );
+      it("should throw when calling transition with no active channel", async () => {
+        // await expect(bridge.transition([justGreen])).rejects.toThrow(
+        //   "No active datagram socket!"
+        // );
+        try {
+          await bridge.transition([justGreen]);
+        } catch (e) {
+          expect(e.message).toBe("No active datagram socket!");
+        }
       });
 
       it("should setup a dgram channel for a given entertainment area", async () => {

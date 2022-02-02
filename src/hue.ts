@@ -122,11 +122,14 @@ export default class HueBridge {
       },
     } as unknown as dtls.Options);
 
-    await sleep(timeout);
+    this.socket.on("close", () => {
+      throw new Error("the datagram socket has closed");
+    });
 
-    if (!this.socket) {
-      throw new Error("Unable to start datagram socket!");
-    }
+    return new Promise((resolve, reject) => {
+      this.socket.on("error", reject);
+      this.socket.on("connected", resolve);
+    });
   }
 
   async stop(): Promise<void> {
@@ -191,7 +194,9 @@ export default class HueBridge {
   addZone(data: Partial<Zone>): Promise<ResourceNode> {}
   addBehaviorInstance(data: Partial<{}>): Promise<ResourceNode> {}
   addGeoFenceClient(data: Partial<{}>): Promise<ResourceNode> {}
-  addEntertainmentArea(data: Partial<EntertainmentArea>): Promise<ResourceNode> {}
+  addEntertainmentArea(
+    data: Partial<EntertainmentArea>
+  ): Promise<ResourceNode> {}
 
   // Read
   async getLights(): Promise<Light[]> {
@@ -383,8 +388,14 @@ export default class HueBridge {
   updateEntertainmentService(id: string, updates: {}): Promise<ResourceNode> {}
   updateHomeKitService(id: string, updates: {}): Promise<ResourceNode> {}
   updateDevicePowerService(id: string, updates: {}): Promise<ResourceNode> {}
-  updateZigbeeConnectivityService(id: string, update: {}): Promise<ResourceNode> {}
-  updateZigbeeGreenPowerService(id: string, updates: {}): Promise<ResourceNode> {}
+  updateZigbeeConnectivityService(
+    id: string,
+    update: {}
+  ): Promise<ResourceNode> {}
+  updateZigbeeGreenPowerService(
+    id: string,
+    updates: {}
+  ): Promise<ResourceNode> {}
 
   // Delete
   removeScene(id: string): Promise<void> {

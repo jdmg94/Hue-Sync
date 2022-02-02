@@ -1,0 +1,173 @@
+
+> hue-sync@0.0.1 test
+> jest src
+
+jest-haste-map: duplicate manual mock found: node-fetch
+  The following files share their name; please delete one of them:
+    * <rootDir>/src/__mocks__/node-fetch.js
+    * <rootDir>/build/__mocks__/node-fetch.js
+
+jest-haste-map: duplicate manual mock found: node-dtls-client
+  The following files share their name; please delete one of them:
+    * <rootDir>/src/__mocks__/node-dtls-client.js
+    * <rootDir>/build/__mocks__/node-dtls-client.js
+
+  console.warn
+    Unmatched GET to https://discovery.meethue.com/
+
+      1 | import https from "https";
+    > 2 | import fetch from "node-fetch";
+        |                               ^
+      3 | import { dtls } from "node-dtls-client";
+      4 |
+      5 | import { sleep } from "./utils";
+
+      at Function.executeRouter (node_modules/fetch-mock/cjs/lib/fetch-handler.js:221:11)
+      at Function._fetchHandler (node_modules/fetch-mock/cjs/lib/fetch-handler.js:144:34)
+      at Function.fetchHandler (node_modules/fetch-mock/cjs/lib/fetch-handler.js:135:14)
+      at Object.fetchMockProxy [as default] (node_modules/fetch-mock/cjs/lib/index.js:52:51)
+      at Function.discover (src/hue.ts:2:31)
+      at Object.<anonymous> (src/hue.spec.ts:36:49)
+
+  console.warn
+    Unmatched POST to http://1.2.3.4/api
+
+      1 | import https from "https";
+    > 2 | import fetch from "node-fetch";
+        |                               ^
+      3 | import { dtls } from "node-dtls-client";
+      4 |
+      5 | import { sleep } from "./utils";
+
+      at Function.executeRouter (node_modules/fetch-mock/cjs/lib/fetch-handler.js:221:11)
+      at Function._fetchHandler (node_modules/fetch-mock/cjs/lib/fetch-handler.js:144:34)
+      at Function.fetchHandler (node_modules/fetch-mock/cjs/lib/fetch-handler.js:135:14)
+      at Object.fetchMockProxy [as default] (node_modules/fetch-mock/cjs/lib/index.js:52:51)
+      at Function.register (src/hue.ts:2:31)
+      at Object.<anonymous> (src/hue.spec.ts:44:43)
+
+  console.warn
+    Unmatched GET to http://1.2.3.4/api/config
+
+      1 | import https from "https";
+    > 2 | import fetch from "node-fetch";
+        |                               ^
+      3 | import { dtls } from "node-dtls-client";
+      4 |
+      5 | import { sleep } from "./utils";
+
+      at Function.executeRouter (node_modules/fetch-mock/cjs/lib/fetch-handler.js:221:11)
+      at Function._fetchHandler (node_modules/fetch-mock/cjs/lib/fetch-handler.js:144:34)
+      at Function.fetchHandler (node_modules/fetch-mock/cjs/lib/fetch-handler.js:135:14)
+      at Object.fetchMockProxy [as default] (node_modules/fetch-mock/cjs/lib/index.js:52:51)
+      at Function.getInfo (src/hue.ts:2:31)
+      at Object.<anonymous> (src/hue.spec.ts:65:38)
+
+  console.warn
+    Unmatched GET to https://1.2.3.4/clip/v2/resource/entertainment_configuration
+
+      1 | import https from "https";
+    > 2 | import fetch from "node-fetch";
+        |                               ^
+      3 | import { dtls } from "node-dtls-client";
+      4 |
+      5 | import { sleep } from "./utils";
+
+      at Function.executeRouter (node_modules/fetch-mock/cjs/lib/fetch-handler.js:221:11)
+      at Function._fetchHandler (node_modules/fetch-mock/cjs/lib/fetch-handler.js:144:34)
+      at Function.fetchHandler (node_modules/fetch-mock/cjs/lib/fetch-handler.js:135:14)
+      at Object.fetchMockProxy [as default] (node_modules/fetch-mock/cjs/lib/index.js:52:51)
+      at HueBridge._request (src/hue.ts:2:31)
+      at HueBridge.getEntertainmentAreas (src/hue.ts:280:33)
+      at Object.<anonymous> (src/hue.spec.ts:237:37)
+
+  console.warn
+    Unmatched GET to https://1.2.3.4/clip/v2/resource/entertainment_configuration/test
+
+      1 | import https from "https";
+    > 2 | import fetch from "node-fetch";
+        |                               ^
+      3 | import { dtls } from "node-dtls-client";
+      4 |
+      5 | import { sleep } from "./utils";
+
+      at Function.executeRouter (node_modules/fetch-mock/cjs/lib/fetch-handler.js:221:11)
+      at Function._fetchHandler (node_modules/fetch-mock/cjs/lib/fetch-handler.js:144:34)
+      at Function.fetchHandler (node_modules/fetch-mock/cjs/lib/fetch-handler.js:135:14)
+      at Object.fetchMockProxy [as default] (node_modules/fetch-mock/cjs/lib/index.js:52:51)
+      at HueBridge._request (src/hue.ts:2:31)
+      at HueBridge.getEntertainmentArea (src/hue.ts:288:33)
+      at Object.<anonymous> (src/hue.spec.ts:249:37)
+
+  console.warn
+    Unmatched GET to https://1.2.3.4/clip/v2/resource/light
+
+      1 | import https from "https";
+    > 2 | import fetch from "node-fetch";
+        |                               ^
+      3 | import { dtls } from "node-dtls-client";
+      4 |
+      5 | import { sleep } from "./utils";
+
+      at Function.executeRouter (node_modules/fetch-mock/cjs/lib/fetch-handler.js:221:11)
+      at Function._fetchHandler (node_modules/fetch-mock/cjs/lib/fetch-handler.js:144:34)
+      at Function.fetchHandler (node_modules/fetch-mock/cjs/lib/fetch-handler.js:135:14)
+      at Object.fetchMockProxy [as default] (node_modules/fetch-mock/cjs/lib/index.js:52:51)
+      at HueBridge._request (src/hue.ts:2:31)
+      at HueBridge.getLights (src/hue.ts:200:33)
+      at Object.<anonymous> (src/hue.spec.ts:261:37)
+
+  console.warn
+    Unmatched GET to https://1.2.3.4/clip/v2/resource/light/test
+
+      1 | import https from "https";
+    > 2 | import fetch from "node-fetch";
+        |                               ^
+      3 | import { dtls } from "node-dtls-client";
+      4 |
+      5 | import { sleep } from "./utils";
+
+      at Function.executeRouter (node_modules/fetch-mock/cjs/lib/fetch-handler.js:221:11)
+      at Function._fetchHandler (node_modules/fetch-mock/cjs/lib/fetch-handler.js:144:34)
+      at Function.fetchHandler (node_modules/fetch-mock/cjs/lib/fetch-handler.js:135:14)
+      at Object.fetchMockProxy [as default] (node_modules/fetch-mock/cjs/lib/index.js:52:51)
+      at HueBridge._request (src/hue.ts:2:31)
+      at HueBridge.getLight (src/hue.ts:208:33)
+      at Object.<anonymous> (src/hue.spec.ts:274:37)
+
+  console.warn
+    Unmatched PUT to https://1.2.3.4/clip/v2/resource/entertainment_configuration/test
+
+      1 | import https from "https";
+    > 2 | import fetch from "node-fetch";
+        |                               ^
+      3 | import { dtls } from "node-dtls-client";
+      4 |
+      5 | import { sleep } from "./utils";
+
+      at Function.executeRouter (node_modules/fetch-mock/cjs/lib/fetch-handler.js:221:11)
+      at Function._fetchHandler (node_modules/fetch-mock/cjs/lib/fetch-handler.js:144:34)
+      at Function.fetchHandler (node_modules/fetch-mock/cjs/lib/fetch-handler.js:135:14)
+      at Object.fetchMockProxy [as default] (node_modules/fetch-mock/cjs/lib/index.js:52:51)
+      at HueBridge._request (src/hue.ts:2:31)
+      at HueBridge.updateEntertainmentArea (src/hue.ts:362:33)
+      at Object.<anonymous> (src/hue.spec.ts:288:37)
+
+  console.warn
+    Unmatched GET to https://1.2.3.4/clip/v2/resource/entertainment_configuration/test
+
+      1 | import https from "https";
+    > 2 | import fetch from "node-fetch";
+        |                               ^
+      3 | import { dtls } from "node-dtls-client";
+      4 |
+      5 | import { sleep } from "./utils";
+
+      at Function.executeRouter (node_modules/fetch-mock/cjs/lib/fetch-handler.js:221:11)
+      at Function._fetchHandler (node_modules/fetch-mock/cjs/lib/fetch-handler.js:144:34)
+      at Function.fetchHandler (node_modules/fetch-mock/cjs/lib/fetch-handler.js:135:14)
+      at Object.fetchMockProxy [as default] (node_modules/fetch-mock/cjs/lib/index.js:52:51)
+      at HueBridge._request (src/hue.ts:2:31)
+      at HueBridge.getEntertainmentArea (src/hue.ts:288:33)
+      at HueBridge.start (src/hue.ts:105:41)
+
