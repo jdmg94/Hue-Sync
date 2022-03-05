@@ -1,8 +1,7 @@
-import https from "https";
+import * as https from "https";
 import fetch from "node-fetch";
 import { dtls } from "node-dtls-client";
 
-import { sleep } from "./utils";
 import {
   Room,
   Zone,
@@ -15,6 +14,7 @@ import {
   EntertainmentArea,
   HueBridgeNetworkDevice,
   BridgeClientCredentials,
+  LightGroup,
 } from "./hue.types";
 
 interface HueBridgeArgs {
@@ -22,17 +22,22 @@ interface HueBridgeArgs {
   credentials: BridgeClientCredentials;
 }
 
+type JSONResponse<T extends {}> = {
+  errors?: Error[];
+  data: T;
+};
+
 export default class HueBridge {
   static async discover(): Promise<HueBridgeNetworkDevice[]> {
     const response = await fetch("https://discovery.meethue.com/");
 
-    return response.json();
+    return response.json() as Promise<HueBridgeNetworkDevice[]>;
   }
 
   static async getInfo(url: string): Promise<BridgeConfig> {
     const response = await fetch(`http://${url}/api/config`);
 
-    return response.json();
+    return response.json() as Promise<BridgeConfig>;
   }
 
   static async register(
@@ -53,7 +58,12 @@ export default class HueBridge {
       },
     });
 
-    const [{ error, success }] = await response.json();
+    type CredentialsResponse = {
+      error: Error[];
+      success: BridgeClientCredentials;
+    };
+    const [{ error, success }] =
+      (await response.json()) as CredentialsResponse[];
 
     if (error) throw error;
 
@@ -73,7 +83,10 @@ export default class HueBridge {
     this.credentials = credentials;
   }
 
-  async _request(endpoint, options: any = { headers: {}, method: "GET" }) {
+  async _request<T extends {}>(
+    endpoint,
+    options: any = { headers: {}, method: "GET" }
+  ): Promise<T> {
     if (!options.headers) {
       options.headers = {};
     }
@@ -88,10 +101,12 @@ export default class HueBridge {
 
     const response = await fetch(endpoint, options);
 
-    return response.json();
+    const result = (await response.json()) as T;
+
+    return result;
   }
 
-  _unwrap({ errors, data }) {
+  _unwrap<T extends {}>({ errors, data }: JSONResponse<T>) {
     if (!errors || errors.length === 0) {
       return data;
     }
@@ -189,6 +204,7 @@ export default class HueBridge {
   }
 
   // Create
+  /*
   addScene(data: Partial<Scene>): Promise<ResourceNode> {}
   addRoom(data: Partial<Room>): Promise<ResourceNode> {}
   addZone(data: Partial<Zone>): Promise<ResourceNode> {}
@@ -197,12 +213,13 @@ export default class HueBridge {
   addEntertainmentArea(
     data: Partial<EntertainmentArea>
   ): Promise<ResourceNode> {}
+  */
 
   // Read
   async getLights(): Promise<Light[]> {
     const response = await this._request(
       `https://${this.url}/clip/v2/resource/light`
-    );
+    ) as JSONResponse<Light[]>;
 
     return this._unwrap(response);
   }
@@ -210,7 +227,7 @@ export default class HueBridge {
   async getLight(id: string): Promise<Light> {
     const response = await this._request(
       `https://${this.url}/clip/v2/resource/light/${id}`
-    );
+    ) as JSONResponse<Light[]>;
 
     return this._unwrap(response)[0];
   }
@@ -218,7 +235,7 @@ export default class HueBridge {
   async getGroupedLights() {
     const response = await this._request(
       `https://${this.url}/clip/v2/resource/grouped_light`
-    );
+    ) as JSONResponse<LightGroup[]>;
 
     return this._unwrap(response);
   }
@@ -226,7 +243,7 @@ export default class HueBridge {
   async getLightGroup(id: string) {
     const response = await this._request(
       `https://${this.url}/clip/v2/resource/grouped_light/${id}`
-    );
+    ) as JSONResponse<LightGroup[]>;
 
     return this._unwrap(response)[0];
   }
@@ -234,7 +251,7 @@ export default class HueBridge {
   async getScenes(): Promise<Scene[]> {
     const response = await this._request(
       `https://${this.url}/clip/v2/resource/scene`
-    );
+    ) as JSONResponse<Scene[]>;
 
     return this._unwrap(response);
   }
@@ -242,7 +259,7 @@ export default class HueBridge {
   async getScene(id: string): Promise<Scene> {
     const response = await this._request(
       `https://${this.url}/clip/v2/resource/scene/${id}`
-    );
+    ) as JSONResponse<Scene[]>;
 
     return this._unwrap(response)[0];
   }
@@ -250,7 +267,7 @@ export default class HueBridge {
   async getRooms(): Promise<Room[]> {
     const response = await this._request(
       `https://${this.url}/clip/v2/resource/room`
-    );
+    ) as JSONResponse<Room[]>;
 
     return this._unwrap(response);
   }
@@ -258,7 +275,7 @@ export default class HueBridge {
   async getRoom(id: string): Promise<Room> {
     const response = await this._request(
       `https://${this.url}/clip/v2/resource/room/${id}`
-    );
+    ) as JSONResponse<Room[]>;
 
     return this._unwrap(response)[0];
   }
@@ -266,7 +283,7 @@ export default class HueBridge {
   async getZones(): Promise<Zone[]> {
     const response = await this._request(
       `https://${this.url}/clip/v2/resource/zone`
-    );
+    ) as JSONResponse<Zone[]>;
 
     return this._unwrap(response);
   }
@@ -274,7 +291,7 @@ export default class HueBridge {
   async getZone(id: string): Promise<Zone> {
     const response = await this._request(
       `https://${this.url}/clip/v2/resource/zone/${id}`
-    );
+    ) as JSONResponse<Zone[]>;
 
     return this._unwrap(response)[0];
   }
@@ -282,7 +299,7 @@ export default class HueBridge {
   async getEntertainmentAreas(): Promise<EntertainmentArea[]> {
     const response = await this._request(
       `https://${this.url}/clip/v2/resource/entertainment_configuration`
-    );
+    ) as JSONResponse<EntertainmentArea[]>;
 
     return this._unwrap(response);
   }
@@ -290,7 +307,7 @@ export default class HueBridge {
   async getEntertainmentArea(id: string): Promise<EntertainmentArea> {
     const response = await this._request(
       `https://${this.url}/clip/v2/resource/entertainment_configuration/${id}`
-    );
+    ) as JSONResponse<EntertainmentArea[]>;
 
     return this._unwrap(response)[0];
   }
@@ -298,7 +315,7 @@ export default class HueBridge {
   async getHomeAreas(): Promise<BridgeHome[]> {
     const response = await this._request(
       `https://${this.url}/clip/v2/resource/bridge_home`
-    );
+    ) as JSONResponse<BridgeHome[]>;
 
     return this._unwrap(response);
   }
@@ -306,7 +323,7 @@ export default class HueBridge {
   async getHomeArea(id: string): Promise<BridgeHome> {
     const response = await this._request(
       `https://${this.url}/clip/v2/resource/bridge_home/${id}`
-    );
+    ) as JSONResponse<BridgeHome[]>;
 
     return this._unwrap(response)[0];
   }
@@ -314,7 +331,7 @@ export default class HueBridge {
   async getDevices(): Promise<Device[]> {
     const response = await this._request(
       `https://${this.url}/clip/v2/resource/device`
-    );
+    ) as JSONResponse<Device[]>;
 
     return this._unwrap(response);
   }
@@ -322,7 +339,7 @@ export default class HueBridge {
   async getDevice(id: string): Promise<Device> {
     const response = await this._request(
       `https://${this.url}/clip/v2/resource/device/${id}`
-    );
+    )  as JSONResponse<Device[]>;
 
     return this._unwrap(response)[0];
   }
@@ -360,17 +377,18 @@ export default class HueBridge {
   // Update
   async updateEntertainmentArea(
     id: string,
-    updates: Partial<EntertainmentArea>
+    updates: Partial<EntertainmentArea> & { action: string }
   ): Promise<ResourceNode> {
     const response = await this._request(
       `https://${this.url}/clip/v2/resource/entertainment_configuration/${id}`,
       { method: "PUT", body: updates }
-    );
+    ) as JSONResponse<ResourceNode[]>;
 
     return this._unwrap(response)[0];
   }
 
   // not implemented yet
+  /*
   updateLight(id: string, updates: {}): Promise<ResourceNode> {}
   updateScene(id: string, updates: {}): Promise<ResourceNode> {}
   updateRoom(id: string, updates: {}): Promise<ResourceNode> {}
@@ -396,24 +414,25 @@ export default class HueBridge {
     id: string,
     updates: {}
   ): Promise<ResourceNode> {}
+  */
 
   // Delete
-  removeScene(id: string): Promise<void> {
+  removeScene(id: string): Promise<{}> {
     return this._request(`https://${this.url}/clip/v2/resource/scene/${id}`, {
       method: "DELETE",
     });
   }
-  removeRoom(id: string): Promise<void> {
+  removeRoom(id: string): Promise<{}> {
     return this._request(`https://${this.url}/clip/v2/resource/room/${id}`, {
       method: "DELETE",
     });
   }
-  removeZone(id: string): Promise<void> {
+  removeZone(id: string): Promise<{}> {
     return this._request(`https://${this.url}/clip/v2/resource/zone/${id}`, {
       method: "DELETE",
     });
   }
-  removeBehaviorInstance(id: string): Promise<void> {
+  removeBehaviorInstance(id: string): Promise<{}> {
     return this._request(
       `https://${this.url}/clip/v2/resource/behavior_instance/${id}`,
       {
@@ -421,7 +440,7 @@ export default class HueBridge {
       }
     );
   }
-  removeGeoFenceClient(id: string): Promise<void> {
+  removeGeoFenceClient(id: string): Promise<{}> {
     return this._request(
       `https://${this.url}/clip/v2/resource/geofence_client/${id}`,
       {
@@ -429,7 +448,7 @@ export default class HueBridge {
       }
     );
   }
-  removeEntertainmentArea(id: string): Promise<void> {
+  removeEntertainmentArea(id: string): Promise<{}> {
     return this._request(
       `https://${this.url}/clip/v2/resource/entertainment_configuration/${id}`,
       {
