@@ -137,8 +137,10 @@ export default class HueBridge {
       },
     } as unknown as dtls.Options);
 
-    this.socket.on("close", () => {
-      throw new Error("the datagram socket has closed");
+    this.socket.on("close", function () {
+      if (this.entertainmentArea) {
+        throw new Error("the datagram socket has closed");
+      }
     });
 
     return new Promise((resolve, reject) => {
@@ -151,7 +153,10 @@ export default class HueBridge {
     if (!this.socket) {
       throw new Error("No active datagram socket!");
     }
+    
+    this.entertainmentArea = null;
     this.socket.close();
+
     await this.updateEntertainmentArea(this.entertainmentArea.id, {
       action: "stop",
     });
@@ -217,129 +222,129 @@ export default class HueBridge {
 
   // Read
   async getLights(): Promise<Light[]> {
-    const response = await this._request(
+    const response = (await this._request(
       `https://${this.url}/clip/v2/resource/light`
-    ) as JSONResponse<Light[]>;
+    )) as JSONResponse<Light[]>;
 
     return this._unwrap(response);
   }
 
   async getLight(id: string): Promise<Light> {
-    const response = await this._request(
+    const response = (await this._request(
       `https://${this.url}/clip/v2/resource/light/${id}`
-    ) as JSONResponse<Light[]>;
+    )) as JSONResponse<Light[]>;
 
     return this._unwrap(response)[0];
   }
 
   async getGroupedLights() {
-    const response = await this._request(
+    const response = (await this._request(
       `https://${this.url}/clip/v2/resource/grouped_light`
-    ) as JSONResponse<LightGroup[]>;
+    )) as JSONResponse<LightGroup[]>;
 
     return this._unwrap(response);
   }
 
   async getLightGroup(id: string) {
-    const response = await this._request(
+    const response = (await this._request(
       `https://${this.url}/clip/v2/resource/grouped_light/${id}`
-    ) as JSONResponse<LightGroup[]>;
+    )) as JSONResponse<LightGroup[]>;
 
     return this._unwrap(response)[0];
   }
 
   async getScenes(): Promise<Scene[]> {
-    const response = await this._request(
+    const response = (await this._request(
       `https://${this.url}/clip/v2/resource/scene`
-    ) as JSONResponse<Scene[]>;
+    )) as JSONResponse<Scene[]>;
 
     return this._unwrap(response);
   }
 
   async getScene(id: string): Promise<Scene> {
-    const response = await this._request(
+    const response = (await this._request(
       `https://${this.url}/clip/v2/resource/scene/${id}`
-    ) as JSONResponse<Scene[]>;
+    )) as JSONResponse<Scene[]>;
 
     return this._unwrap(response)[0];
   }
 
   async getRooms(): Promise<Room[]> {
-    const response = await this._request(
+    const response = (await this._request(
       `https://${this.url}/clip/v2/resource/room`
-    ) as JSONResponse<Room[]>;
+    )) as JSONResponse<Room[]>;
 
     return this._unwrap(response);
   }
 
   async getRoom(id: string): Promise<Room> {
-    const response = await this._request(
+    const response = (await this._request(
       `https://${this.url}/clip/v2/resource/room/${id}`
-    ) as JSONResponse<Room[]>;
+    )) as JSONResponse<Room[]>;
 
     return this._unwrap(response)[0];
   }
 
   async getZones(): Promise<Zone[]> {
-    const response = await this._request(
+    const response = (await this._request(
       `https://${this.url}/clip/v2/resource/zone`
-    ) as JSONResponse<Zone[]>;
+    )) as JSONResponse<Zone[]>;
 
     return this._unwrap(response);
   }
 
   async getZone(id: string): Promise<Zone> {
-    const response = await this._request(
+    const response = (await this._request(
       `https://${this.url}/clip/v2/resource/zone/${id}`
-    ) as JSONResponse<Zone[]>;
+    )) as JSONResponse<Zone[]>;
 
     return this._unwrap(response)[0];
   }
 
   async getEntertainmentAreas(): Promise<EntertainmentArea[]> {
-    const response = await this._request(
+    const response = (await this._request(
       `https://${this.url}/clip/v2/resource/entertainment_configuration`
-    ) as JSONResponse<EntertainmentArea[]>;
+    )) as JSONResponse<EntertainmentArea[]>;
 
     return this._unwrap(response);
   }
 
   async getEntertainmentArea(id: string): Promise<EntertainmentArea> {
-    const response = await this._request(
+    const response = (await this._request(
       `https://${this.url}/clip/v2/resource/entertainment_configuration/${id}`
-    ) as JSONResponse<EntertainmentArea[]>;
+    )) as JSONResponse<EntertainmentArea[]>;
 
     return this._unwrap(response)[0];
   }
 
   async getHomeAreas(): Promise<BridgeHome[]> {
-    const response = await this._request(
+    const response = (await this._request(
       `https://${this.url}/clip/v2/resource/bridge_home`
-    ) as JSONResponse<BridgeHome[]>;
+    )) as JSONResponse<BridgeHome[]>;
 
     return this._unwrap(response);
   }
 
   async getHomeArea(id: string): Promise<BridgeHome> {
-    const response = await this._request(
+    const response = (await this._request(
       `https://${this.url}/clip/v2/resource/bridge_home/${id}`
-    ) as JSONResponse<BridgeHome[]>;
+    )) as JSONResponse<BridgeHome[]>;
 
     return this._unwrap(response)[0];
   }
 
   async getDevices(): Promise<Device[]> {
-    const response = await this._request(
+    const response = (await this._request(
       `https://${this.url}/clip/v2/resource/device`
-    ) as JSONResponse<Device[]>;
+    )) as JSONResponse<Device[]>;
 
     return this._unwrap(response);
   }
 
   async getDevice(id: string): Promise<Device> {
-    const response = await this._request(
+    const response = (await this._request(
       `https://${this.url}/clip/v2/resource/device/${id}`
-    )  as JSONResponse<Device[]>;
+    )) as JSONResponse<Device[]>;
 
     return this._unwrap(response)[0];
   }
@@ -379,10 +384,10 @@ export default class HueBridge {
     id: string,
     updates: Partial<EntertainmentArea> & { action: string }
   ): Promise<ResourceNode> {
-    const response = await this._request(
+    const response = (await this._request(
       `https://${this.url}/clip/v2/resource/entertainment_configuration/${id}`,
       { method: "PUT", body: updates }
-    ) as JSONResponse<ResourceNode[]>;
+    )) as JSONResponse<ResourceNode[]>;
 
     return this._unwrap(response)[0];
   }
