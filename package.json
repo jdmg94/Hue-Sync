@@ -35,9 +35,9 @@
   },
   "dependencies": {
     "@swc-node/jest": "^1.4.3",
+    "cross-fetch": "^3.1.5",
     "hue-sync": "0.0.1",
     "node-dtls-client": "^1.0.1",
-    "node-fetch": "^3.2.0",
     "webpack-node-externals": "^3.0.0"
   }
 }

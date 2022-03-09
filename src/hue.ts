@@ -1,5 +1,5 @@
 import * as https from "https";
-import fetch from "node-fetch";
+import fetch from "cross-fetch";
 import { dtls } from "node-dtls-client";
 
 import {

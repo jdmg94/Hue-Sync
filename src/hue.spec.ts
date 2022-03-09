@@ -1,5 +1,5 @@
 import HueBridge from "./hue";
-import fetchMock from "./__mocks__/node-fetch";
+import fetchMock from "./__mocks__/cross-fetch";
 import {
   Light,
   BridgeConfig,
