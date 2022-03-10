@@ -1,5 +1,4 @@
 {
-    // Change this to match your project
     "include": [
         "src/**/*"
     ],
@@ -9,6 +8,7 @@
         "src/__mocks__",
     ],
     "compilerOptions": {
+        "lib": [ "es2016" ],
         // Generate d.ts files
         "declaration": true,
         // This compiler run should

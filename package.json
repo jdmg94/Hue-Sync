@@ -7,7 +7,9 @@
     "test": "jest src",
     "lint": "prettier -w src",
     "clean": "rm -rf build",
-    "build": "swc src -d build && tsc"
+    "declarations": "tsc",
+    "transpile": "swc src -d build",
+    "build": "npm run clean && npm run transpile && npm run declarations"
   },
   "repository": {
     "type": "git",
@@ -20,24 +22,23 @@
   },
   "homepage": "https://github.com/jdmg94/Hue-Sync#readme",
   "devDependencies": {
+    "@swc-node/jest": "^1.4.3",
     "@swc/cli": "^0.1.55",
-    "@swc/core": "^1.2.133",
-    "@swc/jest": "^0.2.17",
-    "@types/jest": "^27.4.0",
-    "browserslist": "^4.19.1",
+    "@swc/core": "^1.2.151",
+    "@types/jest": "^27.4.1",
+    "@types/node": "^17.0.21",
+    "browserslist": "^4.20.0",
     "fetch-mock": "^9.11.0",
-    "jest": "^27.4.7",
+    "jest": "^27.5.1",
     "prettier": "^2.5.1",
     "swc-loader": "^0.1.15",
     "typescript": "^4.6.2",
-    "webpack": "^5.67.0",
-    "webpack-cli": "^4.9.2"
+    "webpack": "^5.70.0",
+    "webpack-cli": "^4.9.2",
+    "webpack-node-externals": "^3.0.0"
   },
   "dependencies": {
-    "@swc-node/jest": "^1.4.3",
     "cross-fetch": "^3.1.5",
-    "hue-sync": "0.0.1",
-    "node-dtls-client": "^1.0.1",
-    "webpack-node-externals": "^3.0.0"
+    "node-dtls-client": "^1.0.1"
   }
 }

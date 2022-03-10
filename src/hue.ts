@@ -71,12 +71,14 @@ export default class HueBridge {
   }
 
   // properties
-  url: string = null;
-  socket: dtls.Socket = null;
-  entertainmentArea: EntertainmentArea = null;
-  credentials: BridgeClientCredentials = null;
-  // #NOTE: you might want to pass your own httpAgent to resolve Phillips certificate for HTTPS
-  httpAgent: https.Agent = new https.Agent({ rejectUnauthorized: false });
+  private url: string = null;
+  private socket: dtls.Socket = null;
+  private entertainmentArea: EntertainmentArea = null;
+  private credentials: BridgeClientCredentials = null;
+  private abortionController: AbortController = new AbortController();
+  private httpAgent: https.Agent = new https.Agent({
+    rejectUnauthorized: false,
+  });
 
   constructor({ url, credentials }: HueBridgeArgs) {
     this.url = url;
@@ -116,7 +118,8 @@ export default class HueBridge {
 
   // Datagram streaming
   async start(id: string): Promise<void> {
-    const timeout = 500;
+    const timeout = 1000;
+    const { signal } = this.abortionController;
     this.entertainmentArea = await this.getEntertainmentArea(id);
 
     await this.updateEntertainmentArea(this.entertainmentArea.id, {
@@ -124,6 +127,7 @@ export default class HueBridge {
     });
 
     this.socket = dtls.createSocket({
+      signal,
       timeout,
       port: 2100,
       type: "udp4",
@@ -137,15 +141,10 @@ export default class HueBridge {
       },
     } as unknown as dtls.Options);
 
-    this.socket.on("close", function () {
-      if (this.entertainmentArea) {
-        throw new Error("the datagram socket has closed");
-      }
-    });
-
-    return new Promise((resolve, reject) => {
-      this.socket.on("error", reject);
-      this.socket.on("connected", resolve);
+    return new Promise((resolve) => {
+      this.socket.on("connected", () => {
+        resolve();
+      });
     });
   }
 
@@ -153,13 +152,15 @@ export default class HueBridge {
     if (!this.socket) {
       throw new Error("No active datagram socket!");
     }
-    
-    this.entertainmentArea = null;
-    this.socket.close();
+
+    this.abortionController.abort();
 
     await this.updateEntertainmentArea(this.entertainmentArea.id, {
       action: "stop",
     });
+
+    this.entertainmentArea = null;
+    this.socket.close();
   }
 
   // #NOTE: one [R,G,B] per channel
