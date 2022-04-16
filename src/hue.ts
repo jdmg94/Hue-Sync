@@ -31,13 +31,13 @@ export default class HueBridge {
   static async discover(): Promise<HueBridgeNetworkDevice[]> {
     const response = await fetch("https://discovery.meethue.com/");
 
-    return response.json() as Promise<HueBridgeNetworkDevice[]>;
+    return response.json();
   }
 
   static async getInfo(url: string): Promise<BridgeConfig> {
     const response = await fetch(`http://${url}/api/config`);
 
-    return response.json() as Promise<BridgeConfig>;
+    return response.json();
   }
 
   static async register(
@@ -62,8 +62,8 @@ export default class HueBridge {
       error: Error[];
       success: BridgeClientCredentials;
     };
-    const [{ error, success }] =
-      (await response.json()) as CredentialsResponse[];
+
+    const [{ error, success }]: CredentialsResponse[] = await response.json();
 
     if (error) throw error;
 
@@ -103,9 +103,7 @@ export default class HueBridge {
 
     const response = await fetch(endpoint, options);
 
-    const result = (await response.json()) as T;
-
-    return result;
+    return response.json() as Promise<T>;
   }
 
   _unwrap<T extends {}>({ errors, data }: JSONResponse<T>) {
@@ -223,129 +221,129 @@ export default class HueBridge {
 
   // Read
   async getLights(): Promise<Light[]> {
-    const response = (await this._request(
+    const response = await this._request<JSONResponse<Light[]>>(
       `https://${this.url}/clip/v2/resource/light`
-    )) as JSONResponse<Light[]>;
+    );
 
     return this._unwrap(response);
   }
 
   async getLight(id: string): Promise<Light> {
-    const response = (await this._request(
+    const response = await this._request<JSONResponse<Light[]>>(
       `https://${this.url}/clip/v2/resource/light/${id}`
-    )) as JSONResponse<Light[]>;
+    );
 
     return this._unwrap(response)[0];
   }
 
   async getGroupedLights() {
-    const response = (await this._request(
+    const response = await this._request<JSONResponse<LightGroup[]>>(
       `https://${this.url}/clip/v2/resource/grouped_light`
-    )) as JSONResponse<LightGroup[]>;
+    );
 
     return this._unwrap(response);
   }
 
   async getLightGroup(id: string) {
-    const response = (await this._request(
+    const response = await this._request<JSONResponse<LightGroup[]>>(
       `https://${this.url}/clip/v2/resource/grouped_light/${id}`
-    )) as JSONResponse<LightGroup[]>;
+    );
 
     return this._unwrap(response)[0];
   }
 
   async getScenes(): Promise<Scene[]> {
-    const response = (await this._request(
+    const response = await this._request<JSONResponse<Scene[]>>(
       `https://${this.url}/clip/v2/resource/scene`
-    )) as JSONResponse<Scene[]>;
+    );
 
     return this._unwrap(response);
   }
 
   async getScene(id: string): Promise<Scene> {
-    const response = (await this._request(
+    const response = await this._request<JSONResponse<Scene[]>>(
       `https://${this.url}/clip/v2/resource/scene/${id}`
-    )) as JSONResponse<Scene[]>;
+    );
 
     return this._unwrap(response)[0];
   }
 
   async getRooms(): Promise<Room[]> {
-    const response = (await this._request(
+    const response = await this._request<JSONResponse<Room[]>>(
       `https://${this.url}/clip/v2/resource/room`
-    )) as JSONResponse<Room[]>;
+    );
 
     return this._unwrap(response);
   }
 
   async getRoom(id: string): Promise<Room> {
-    const response = (await this._request(
+    const response = await this._request<JSONResponse<Room[]>>(
       `https://${this.url}/clip/v2/resource/room/${id}`
-    )) as JSONResponse<Room[]>;
+    );
 
     return this._unwrap(response)[0];
   }
 
   async getZones(): Promise<Zone[]> {
-    const response = (await this._request(
+    const response = await this._request<JSONResponse<Zone[]>>(
       `https://${this.url}/clip/v2/resource/zone`
-    )) as JSONResponse<Zone[]>;
+    );
 
     return this._unwrap(response);
   }
 
   async getZone(id: string): Promise<Zone> {
-    const response = (await this._request(
+    const response = await this._request<JSONResponse<Zone[]>>(
       `https://${this.url}/clip/v2/resource/zone/${id}`
-    )) as JSONResponse<Zone[]>;
+    );
 
     return this._unwrap(response)[0];
   }
 
   async getEntertainmentAreas(): Promise<EntertainmentArea[]> {
-    const response = (await this._request(
+    const response = await this._request<JSONResponse<EntertainmentArea[]>>(
       `https://${this.url}/clip/v2/resource/entertainment_configuration`
-    )) as JSONResponse<EntertainmentArea[]>;
+    );
 
     return this._unwrap(response);
   }
 
   async getEntertainmentArea(id: string): Promise<EntertainmentArea> {
-    const response = (await this._request(
+    const response = await this._request<JSONResponse<EntertainmentArea[]>>(
       `https://${this.url}/clip/v2/resource/entertainment_configuration/${id}`
-    )) as JSONResponse<EntertainmentArea[]>;
+    );
 
     return this._unwrap(response)[0];
   }
 
   async getHomeAreas(): Promise<BridgeHome[]> {
-    const response = (await this._request(
+    const response = await this._request<JSONResponse<BridgeHome[]>>(
       `https://${this.url}/clip/v2/resource/bridge_home`
-    )) as JSONResponse<BridgeHome[]>;
+    );
 
     return this._unwrap(response);
   }
 
   async getHomeArea(id: string): Promise<BridgeHome> {
-    const response = (await this._request(
+    const response = await this._request<JSONResponse<BridgeHome[]>>(
       `https://${this.url}/clip/v2/resource/bridge_home/${id}`
-    )) as JSONResponse<BridgeHome[]>;
+    );
 
     return this._unwrap(response)[0];
   }
 
   async getDevices(): Promise<Device[]> {
-    const response = (await this._request(
+    const response = await this._request<JSONResponse<Device[]>>(
       `https://${this.url}/clip/v2/resource/device`
-    )) as JSONResponse<Device[]>;
+    );
 
     return this._unwrap(response);
   }
 
   async getDevice(id: string): Promise<Device> {
-    const response = (await this._request(
+    const response = await this._request<JSONResponse<Device[]>>(
       `https://${this.url}/clip/v2/resource/device/${id}`
-    )) as JSONResponse<Device[]>;
+    );
 
     return this._unwrap(response)[0];
   }
@@ -385,10 +383,10 @@ export default class HueBridge {
     id: string,
     updates: Partial<EntertainmentArea> & { action: string }
   ): Promise<ResourceNode> {
-    const response = (await this._request(
+    const response = await this._request<JSONResponse<ResourceNode[]>>(
       `https://${this.url}/clip/v2/resource/entertainment_configuration/${id}`,
       { method: "PUT", body: updates }
-    )) as JSONResponse<ResourceNode[]>;
+    );
 
     return this._unwrap(response)[0];
   }
