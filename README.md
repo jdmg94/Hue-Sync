@@ -130,6 +130,7 @@ You should be able to assign a different color to each lightstrip zone by passin
 <!-- Roadmap -->
 ## Roadmap
 
+* get a logo
 *  Complete CRUD Operations
 *  Constructor support to override HttpAgent
 * ??
