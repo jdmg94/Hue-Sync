@@ -1,7 +1,6 @@
 <div align="center">
 
-  <img src="https://placehold.co/200x200?text=Hue+Sync+Logo" alt="logo" width="200" height="auto" />
-  <h1>Hue Sync</h1>
+  <img src="assets/logo.png" alt="hue-sync" height="150" width="auto" />
 
   <p>
     A Typescript implementation of the Phillips Hue API V2
@@ -130,7 +129,6 @@ You should be able to assign a different color to each lightstrip zone by passin
 <!-- Roadmap -->
 ## Roadmap
 
-* get a logo
 *  Complete CRUD Operations
 *  Constructor support to override HttpAgent
 * ??
