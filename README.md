@@ -1,7 +1,12 @@
 <div align="center">
 
-  <img src="assets/logo.png" alt="hue-sync" height="150" width="auto" />
-
+  <img 
+    width="auto" 
+    height="auto" 
+    alt="hue-sync" 
+    src="assets/logo.png" 
+    style="min-height: 80px;" 
+  />
   <p>
     A Typescript implementation of the Phillips Hue API V2
   </p>
