@@ -1,5 +1,7 @@
+import * as https from "https";
+import fetchMock from "jest-fetch-mock";
+
 import HueBridge from "./hue";
-import fetchMock from "./__mocks__/cross-fetch";
 import {
   Light,
   BridgeConfig,
@@ -9,6 +11,8 @@ import {
   BridgeClientCredentials,
 } from "./hue.types";
 
+fetchMock.enableMocks();
+
 describe("hue-sync", () => {
   const mockIp = "1.2.3.4";
   const mockCredentials: BridgeClientCredentials = {
@@ -17,8 +21,7 @@ describe("hue-sync", () => {
   };
 
   afterEach(() => {
-    fetchMock.restore();
-    fetchMock.reset();
+    fetchMock.resetMocks();
   });
 
   describe("static methods", () => {
@@ -29,9 +32,7 @@ describe("hue-sync", () => {
         internalipaddress: "bar",
       };
 
-      fetchMock.get("https://discovery.meethue.com/", [
-        mockBridgeNetworkDevice,
-      ]);
+      fetchMock.mockOnce(JSON.stringify([mockBridgeNetworkDevice]));
 
       const [bridgeOnNetwork] = await HueBridge.discover();
 
@@ -39,7 +40,7 @@ describe("hue-sync", () => {
     });
 
     it("should be able to register hue-sync on Hue Bridge device", async () => {
-      fetchMock.post(`http://${mockIp}/api`, [{ success: mockCredentials }]);
+      fetchMock.mockOnce(JSON.stringify([{ success: mockCredentials }]));
 
       const credentials = await HueBridge.register(mockIp);
 
@@ -54,18 +55,43 @@ describe("hue-sync", () => {
         apiversion: "lorem",
         mac: "ipsum",
         bridgeid: "dolor",
-        factorynew: "sit",
+        factorynew: false,
         replacesbridgeid: "amet",
         modelid: "consecutir",
         starterkitid: "dolor",
       };
 
-      fetchMock.get(`http://${mockIp}/api/config`, mockConfig);
+      fetchMock.mockOnce(JSON.stringify(mockConfig));
 
       const config = await HueBridge.getInfo(mockIp);
 
       expect(config).toEqual(mockConfig);
     });
+  });
+
+  describe("constructor", () => {
+    it("should be able to create a HueBridge instance", () => {
+      const bridge = new HueBridge({
+        url: mockIp,
+        credentials: mockCredentials,
+      });
+
+      expect(bridge).toBeInstanceOf(HueBridge);
+    });
+
+    it("should be able to create a HueBridge instance with custom HTTP Agent", () => {
+      const bridge = new HueBridge({
+        url: mockIp,
+        credentials: mockCredentials,
+        httpAgent: new https.Agent()
+      });
+
+      expect(bridge).toBeInstanceOf(HueBridge);
+    });
+
+    it("should throw if initialized without url and credentials", () => {
+      expect(() => new HueBridge({})).toThrow();
+    })
   });
 
   describe("instance methods", () => {
@@ -74,7 +100,7 @@ describe("hue-sync", () => {
       credentials: mockCredentials,
     });
 
-    const justGreen = [0, 255, 0];
+    const justGreen: [number, number, number] = [0, 255, 0];
     const mockResourceNode: ResourceNode = { rid: "foo", rtype: "_test" };
 
     const mockLight: Light = {
@@ -228,11 +254,16 @@ describe("hue-sync", () => {
     };
 
     describe("Read Methods", () => {
+      beforeEach(() => {
+        bridge = new HueBridge({
+          url: mockIp,
+          credentials: mockCredentials,
+        });
+        fetchMock.resetMocks();
+      });
+
       it("should get the Entertainment Areas registered on Hue Bridge", async () => {
-        fetchMock.get(
-          `https://${mockIp}/clip/v2/resource/entertainment_configuration`,
-          { data: [mockEntertainmentArea] }
-        );
+        fetchMock.mockOnce(JSON.stringify({ data: [mockEntertainmentArea] }));
 
         const result = await bridge.getEntertainmentAreas();
 
@@ -241,10 +272,7 @@ describe("hue-sync", () => {
       });
 
       it("should get a specific Entertainment Areas registered on Hue Bridge", async () => {
-        fetchMock.get(
-          `https://${mockIp}/clip/v2/resource/entertainment_configuration/${mockEntertainmentArea.id}`,
-          { data: [mockEntertainmentArea] }
-        );
+        fetchMock.mockOnce(JSON.stringify({ data: [mockEntertainmentArea] }));
 
         const result = await bridge.getEntertainmentArea(
           mockEntertainmentArea.id
@@ -254,9 +282,11 @@ describe("hue-sync", () => {
       });
 
       it("should get the lights registered on Hue Bridge", async () => {
-        fetchMock.get(`https://${mockIp}/clip/v2/resource/light`, {
-          data: [mockLight, secondMockLight],
-        });
+        fetchMock.mockOnce(
+          JSON.stringify({
+            data: [mockLight, secondMockLight],
+          })
+        );
 
         const result = await bridge.getLights();
 
@@ -266,10 +296,7 @@ describe("hue-sync", () => {
       });
 
       it("should get a specific Light registered on Hue Bridge", async () => {
-        fetchMock.get(
-          `https://${mockIp}/clip/v2/resource/light/${mockLight.id}`,
-          { data: [mockLight] }
-        );
+        fetchMock.mockOnce(JSON.stringify({ data: [mockLight] }));
 
         const result = await bridge.getLight(mockLight.id);
 
@@ -280,10 +307,7 @@ describe("hue-sync", () => {
     describe("Update Methods", () => {
       // Update Operations
       it("should update a given entertainment area", async () => {
-        fetchMock.put(
-          `https://${mockIp}/clip/v2/resource/entertainment_configuration/${mockEntertainmentArea.id}`,
-          { data: [mockResourceNode] }
-        );
+        fetchMock.mockOnce(JSON.stringify({ data: [mockResourceNode] }));
 
         const result = await bridge.updateEntertainmentArea(
           mockEntertainmentArea.id,
@@ -317,15 +341,9 @@ describe("hue-sync", () => {
       });
 
       it("should setup a dgram channel for a given entertainment area", async () => {
-        fetchMock.get(
-          `https://${mockIp}/clip/v2/resource/entertainment_configuration/${mockEntertainmentArea.id}`,
-          { data: [mockEntertainmentArea] }
-        );
+        fetchMock.mockOnce(JSON.stringify({ data: [mockEntertainmentArea] }));
 
-        fetchMock.put(
-          `https://${mockIp}/clip/v2/resource/entertainment_configuration/${mockEntertainmentArea.id}`,
-          { data: [mockResourceNode] }
-        );
+        fetchMock.mockOnce(JSON.stringify({ data: [mockResourceNode] }));
 
         await bridge.start(mockEntertainmentArea.id);
 
@@ -340,10 +358,7 @@ describe("hue-sync", () => {
       });
 
       it("should be able to close the dgram channel for an active entertainment area", async () => {
-        fetchMock.put(
-          `https://${mockIp}/clip/v2/resource/entertainment_configuration/${mockEntertainmentArea.id}`,
-          { data: [mockResourceNode] }
-        );
+        fetchMock.mockOnce(JSON.stringify({ data: [mockResourceNode] }));
 
         await bridge.stop();
 

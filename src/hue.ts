@@ -19,6 +19,7 @@ import {
 interface HueBridgeArgs {
   url: string;
   credentials: BridgeClientCredentials;
+  httpAgent?: https.Agent;
 }
 
 type JSONResponse<T extends {}> = {
@@ -34,7 +35,7 @@ export default class HueBridge {
   }
 
   static async getInfo(url: string): Promise<BridgeConfig> {
-    const response = await fetch(`http://${url}/api/config`);
+    const response = await fetch(`https://${url}/api/config`);
 
     return response.json();
   }
@@ -43,7 +44,7 @@ export default class HueBridge {
     url: string,
     devicetype: string = "hue-sync"
   ): Promise<BridgeClientCredentials> {
-    const endpoint = `http://${url}/api`;
+    const endpoint = `https://${url}/api`;
     const body = JSON.stringify({
       devicetype,
       generateclientkey: true,
@@ -70,8 +71,8 @@ export default class HueBridge {
   }
 
   // properties
-  private url: string = null;
-  private socket: dtls.Socket = null;
+  url: string = null;
+  socket: dtls.Socket = null;
   private entertainmentArea: EntertainmentArea = null;
   private credentials: BridgeClientCredentials = null;
   private abortionController: AbortController = new AbortController();
@@ -79,9 +80,17 @@ export default class HueBridge {
     rejectUnauthorized: false,
   });
 
-  constructor({ url, credentials }: HueBridgeArgs) {
-    this.url = url;
-    this.credentials = credentials;
+  constructor(initial: HueBridgeArgs) {
+    if (!(initial.url && initial.credentials)) {
+      throw new Error("Missing required arguments");
+    }
+
+    this.url = initial.url;
+    this.credentials = initial.credentials;
+
+    if (initial.httpAgent) {
+      this.httpAgent = initial.httpAgent;
+    }
   }
 
   async _request<T extends {}>(
@@ -157,6 +166,7 @@ export default class HueBridge {
     });
 
     this.entertainmentArea = null;
+
     this.socket.close();
   }
 

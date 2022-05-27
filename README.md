@@ -54,6 +54,8 @@
 - [About the Project](#about-the-project)
 - [Installation](#installation)
 - [Usage](#usage)
+  - [Entertainment API](#entertainment-api)
+  - [With HTTPS](#usage-with-https)
 - [Roadmap](#roadmap)
 - [Contributing](#contributing)
 - [License](#license)
@@ -114,6 +116,8 @@ const credentials = await HueSync.register(
 )
 
 credentials.username
+// KyBPfHmVUGSJNBr0Je5GwJzeRc6PXpsYfZki1IRl
+credentials.clientkey
 // 936C90F4AD975945038B6C83B5A8101A9C38EA7C
 ```
 
@@ -124,21 +128,73 @@ const hueBridge = new HueSync({
   credentials,
   url: myBridge.internalipaddress,
 })
+
+const entertainmentAreas = await hueBridge.getEntertainmentAreas()
 ```
 
+### Entertainment API
 
-### Notes
+Once you have created a `Hue-Sync` instance, you need to retrieve your desired entertainment area or default to the first one in order to activate streaming mode.
 
-Support for Gradient Lightstrip Zones is achieved via Entertainment Groups, make sure to create your entertainment groups via the official Phillips Hue App,
-You should be able to assign a different color to each lightstrip zone by passing an array of `[R,G,B]` values (technically a vector, hope you get the gist) 
+```typescript
+const [selectedArea] = entertainmentAreas
+
+await hueBridge.start(selectedArea.id) 
+
+```
+
+this will initiate the dtls handshake and establish the Zigbee connetion with the bridge. Assuming you're using a lightstrip you should be able to assign a different color to each zone by passing an array of `[R,G,B]` values where each value is mapped to each zone. Once the program needs to close the dtls connection the user just needs to call `.stop()` and this will close connections and turn streaming mode off on the active entertainment area.
+
+```typescript
+  // gradient lightstrips have 7 zones
+  const nextColors = [
+    [217, 237, 146],
+    [181, 228, 140],
+    [153, 217, 140],
+    [118, 200, 147],
+    [82, 182, 154],
+    [52, 160, 164],
+    [22, 138, 173],
+  ]
+
+  await hueBridge.transition(nextColors)
+
+  // ...
+  
+  await hueBridge.stop()  
+```
+ 
+
+### Usage with HTTPS
+
+To use HTTPS properly, the client has to validate the Hue Bridge certificate against the Signify private CA Certificate for Hue Bridges. This is typically done by adding the CA cert into the key store trusted by the HTTP client, or for some HTTP clients by adding it as an input parameter when setting up the HTTPS connection.
+
+```typescript
+const cert = await fs.readFile(
+      path.resolve(__dirname, './path/to/signify-cert.pem'),
+      `utf-8`,
+)
+
+const hueBridge = new HueSync({
+  credentials,
+  url: myBridge.internalipaddress,
+  httpAgent: new https.Agent({
+    cert,
+    // other options might be needed    
+  })
+})
+```
+
+> please check out the [official docs on HTTPS](https://developers.meethue.com/develop/application-design-guidance/using-https/) for more information
 
 
 
 <!-- Roadmap -->
 ## Roadmap
 
-*  Complete CRUD Operations
-*  Constructor support to override HttpAgent
+* implement creation of Entertainment Areas
+* research viability of including Signify CA Cert
+* complete CRUD operations
 * ??
 * profit
 
@@ -153,8 +209,6 @@ You should be able to assign a different color to each lightstrip zone by passin
 Contributions are always welcome!
 
 
-
-
 <!-- License -->
 ## License
 
@@ -163,7 +217,7 @@ Apache License 2.0, please checkout the LICENSE file for more information.
 <!-- Contact -->
 ## Contact
 
-José Muñoz - [@jdmg94](https://twitter.com/jdmg94) - jose.munoz.dev@pm.com
+José Muñoz - [@jdmg94](https://twitter.com/jdmg94) - jose.munoz.dev@protonmail.com
 
 
 <!-- Acknowledgments -->

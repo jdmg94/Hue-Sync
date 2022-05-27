@@ -8,7 +8,7 @@
         "src/__mocks__",
     ],
     "compilerOptions": {
-        "lib": [ "es2016" ],
+        "lib": [ "es2016", "dom" ],
         // Generate d.ts files
         "declaration": true,
         // This compiler run should
@@ -20,6 +20,7 @@
         "outDir": "build",
         // go to js file when using IDE functions like
         // "Go to Definition" in VSCode
-        "declarationMap": true
+        "declarationMap": true,
+        "types": ["fetch"]
     }
 }
