@@ -30,15 +30,23 @@
     "browserslist": "^4.20.2",
     "fetch-mock": "^9.11.0",
     "jest": "^27.5.1",
+    "jest-fetch-mock": "^3.0.3",
     "prettier": "^2.6.2",
     "swc-loader": "^0.2.0",
     "typescript": "^4.6.3",
     "webpack": "^5.72.0",
     "webpack-cli": "^4.9.2",
-    "jest-fetch-mock": "^3.0.3",
     "webpack-node-externals": "^3.0.0"
   },
-  "dependencies": {
+  "dependencies": {    
     "node-dtls-client": "^1.0.1"
+  },
+  "peerDependencies": {
+    "cross-fetch": "^3.1.5"
+  },
+  "peerDependenciesMeta": {
+    "cross-fetch": {
+      "optional": true
+    }
   }
 }

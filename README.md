@@ -185,6 +185,8 @@ const hueBridge = new HueSync({
 })
 ```
 
+Alternatively, you can disable TLS verification by setting `NODE_TLS_REJECT_UNAUTHORIZED=0` but I don't recommend this method outside of development
+
 > please check out the [official docs on HTTPS](https://developers.meethue.com/develop/application-design-guidance/using-https/) for more information
 
 
