@@ -1,6 +1,6 @@
 {
   "name": "hue-sync",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "A Library for Phillips Hue Clip API v2 written in Typescript",
   "main": "build/index.js",
   "scripts": {
@@ -38,7 +38,7 @@
     "webpack-cli": "^4.9.2",
     "webpack-node-externals": "^3.0.0"
   },
-  "dependencies": {    
+  "dependencies": {
     "node-dtls-client": "^1.0.1"
   },
   "peerDependencies": {

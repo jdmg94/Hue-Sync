@@ -48,3 +48,6 @@ function _interopRequireWildcard(obj) {
         return newObj;
     }
 }
+if (!globalThis.fetch) {
+    require("cross-fetch/polyfill");
+}

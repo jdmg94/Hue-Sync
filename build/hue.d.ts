@@ -1,7 +1,11 @@
+/// <reference types="node" />
+import * as https from "https";
+import { dtls } from "node-dtls-client";
 import { Room, Zone, Light, Scene, Device, BridgeHome, ResourceNode, BridgeConfig, EntertainmentArea, HueBridgeNetworkDevice, BridgeClientCredentials, LightGroup } from "./hue.types";
 interface HueBridgeArgs {
     url: string;
     credentials: BridgeClientCredentials;
+    httpAgent?: https.Agent;
 }
 declare type JSONResponse<T extends {}> = {
     errors?: Error[];
@@ -11,13 +15,13 @@ export default class HueBridge {
     static discover(): Promise<HueBridgeNetworkDevice[]>;
     static getInfo(url: string): Promise<BridgeConfig>;
     static register(url: string, devicetype?: string): Promise<BridgeClientCredentials>;
-    private url;
-    private socket;
+    url: string;
+    socket: dtls.Socket;
     private entertainmentArea;
     private credentials;
     private abortionController;
     private httpAgent;
-    constructor({ url, credentials }: HueBridgeArgs);
+    constructor(initial: HueBridgeArgs);
     _request<T extends {}>(endpoint: any, options?: any): Promise<T>;
     _unwrap<T extends {}>({ errors, data }: JSONResponse<T>): T;
     start(id: string): Promise<void>;

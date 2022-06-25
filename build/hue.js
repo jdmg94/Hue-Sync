@@ -4,13 +4,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 var https = _interopRequireWildcard(require("https"));
-var _crossFetch = _interopRequireDefault(require("cross-fetch"));
 var _nodeDtlsClient = require("node-dtls-client");
-function _interopRequireDefault(obj) {
-    return obj && obj.__esModule ? obj : {
-        default: obj
-    };
-}
 function _interopRequireWildcard(obj) {
     if (obj && obj.__esModule) {
         return obj;
@@ -34,20 +28,20 @@ function _interopRequireWildcard(obj) {
 }
 class HueBridge {
     static async discover() {
-        const response = await (0, _crossFetch).default("https://discovery.meethue.com/");
+        const response = await fetch("https://discovery.meethue.com/");
         return response.json();
     }
     static async getInfo(url) {
-        const response = await (0, _crossFetch).default(`http://${url}/api/config`);
+        const response = await fetch(`https://${url}/api/config`);
         return response.json();
     }
     static async register(url, devicetype = "hue-sync") {
-        const endpoint = `http://${url}/api`;
+        const endpoint = `https://${url}/api`;
         const body = JSON.stringify({
             devicetype,
             generateclientkey: true
         });
-        const response = await (0, _crossFetch).default(endpoint, {
+        const response = await fetch(endpoint, {
             body,
             method: "POST",
             headers: {
@@ -71,7 +65,7 @@ class HueBridge {
         }
         options.agent = this.httpAgent;
         options.headers["hue-application-key"] = this.credentials.username;
-        const response = await (0, _crossFetch).default(endpoint, options);
+        const response = await fetch(endpoint, options);
         return response.json();
     }
     _unwrap({ errors , data  }) {
@@ -126,21 +120,21 @@ class HueBridge {
         const protocol = Buffer.from("HueStream");
         // V2.0
         const version = Buffer.from([
-            2,
-            0
+            0x02,
+            0x00
         ]);
         const sequenceNumber = Buffer.from([
-            0
+            0x00
         ]); // currently ignored
         const reservedSpaces = Buffer.from([
-            0,
-            0
+            0x00,
+            0x00
         ]);
         const colorMode = Buffer.from([
-            0
+            0x00
         ]); // 0 = RGB, 1 = XY
         const reservedSpace = Buffer.from([
-            0
+            0x00
         ]);
         const groupId = Buffer.from(this.entertainmentArea.id);
         const rgbChannels = colors.map((rgb, channelIndex)=>{
@@ -334,7 +328,7 @@ class HueBridge {
             method: "DELETE"
         });
     }
-    constructor({ url , credentials  }){
+    constructor(initial){
         // properties
         this.url = null;
         this.socket = null;
@@ -344,8 +338,14 @@ class HueBridge {
         this.httpAgent = new https.Agent({
             rejectUnauthorized: false
         });
-        this.url = url;
-        this.credentials = credentials;
+        if (!(initial.url && initial.credentials)) {
+            throw new Error("Missing required arguments");
+        }
+        this.url = initial.url;
+        this.credentials = initial.credentials;
+        if (initial.httpAgent) {
+            this.httpAgent = initial.httpAgent;
+        }
     }
 }
 exports.default = HueBridge;
