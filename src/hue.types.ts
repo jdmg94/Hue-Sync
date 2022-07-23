@@ -1,3 +1,14 @@
+export interface HueBridgeArgs {
+  id: string;
+  url: string;
+  credentials: BridgeClientCredentials;
+}
+
+export type JSONResponse<T extends {}> = {
+  errors?: Error[];
+  data: T;
+};
+
 export interface OnState {
   on: boolean;
 }

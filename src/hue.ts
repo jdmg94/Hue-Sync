@@ -1,7 +1,7 @@
 import mdns from "node-dns-sd";
 import { dtls } from "node-dtls-client";
 import type { LookupFunction } from "net";
-import {
+import type {
   Room,
   Zone,
   Light,
@@ -9,23 +9,18 @@ import {
   Device,
   LightGroup,
   BridgeHome,
+  JSONResponse,
   ResourceNode,
   BridgeConfig,
+  HueBridgeArgs,
   EntertainmentArea,
   HueBridgeNetworkDevice,
   BridgeClientCredentials,
 } from "./hue.types";
 
-interface HueBridgeArgs {
-  id: string;
-  url: string;
-  credentials: BridgeClientCredentials;
+if (!globalThis.fetch) {
+  require("cross-fetch/polyfill");
 }
-
-type JSONResponse<T extends {}> = {
-  errors?: Error[];
-  data: T;
-};
 
 const patchDNS = (domain, ip) => {
   const dns = require("dns");
@@ -101,10 +96,10 @@ export default class HueBridge {
   // properties
   id: string = null;
   url: string = null;
-  socket: dtls.Socket = null;
+  private socket: dtls.Socket = null;
+  private abortionController: AbortController = null;
   private entertainmentArea: EntertainmentArea = null;
   private credentials: BridgeClientCredentials = null;
-  private abortionController: AbortController = new AbortController();
 
   constructor(initial: HueBridgeArgs) {
     this.id = initial.id;
@@ -116,17 +111,18 @@ export default class HueBridge {
 
   private async _request<T extends {}>(
     endpoint,
-    options: any = { headers: {}, method: "GET", keepAlive: true }
+    options: any = { headers: {}, method: "GET" }
   ): Promise<T> {
     if (!options.headers) {
       options.headers = {};
     }
 
     if (options.body && options.method !== "GET") {
-      options.headers["Content-Type"] = "application/json";
       options.body = JSON.stringify(options.body);
+      options.headers["Content-Type"] = "application/json";
     }
 
+    options.keepAlive = true;
     options.headers["hue-application-key"] = this.credentials.username;
 
     const response = await fetch(endpoint, options);
@@ -143,22 +139,23 @@ export default class HueBridge {
   }
 
   // Datagram streaming
-  async start(selectedArea: EntertainmentArea): Promise<void> {
-    const timeout = 1000;
-    const { signal } = this.abortionController;
-
+  async start(
+    selectedArea: EntertainmentArea,
+    timeout: number = 1000
+  ): Promise<void> {
     this.entertainmentArea = selectedArea;
     this.abortionController = new AbortController();
-    await this.updateEntertainmentArea(this.entertainmentArea.id, {
+
+    await this.updateEntertainmentArea(selectedArea.id, {
       action: "start",
     });
 
     this.socket = dtls.createSocket({
-      signal,
       timeout,
       port: 2100,
       type: "udp4",
       address: this.url,
+      signal: this.abortionController.signal,
       cipherSuites: ["TLS_PSK_WITH_AES_128_GCM_SHA256"],
       psk: {
         [this.credentials.username]: Buffer.from(
@@ -168,17 +165,14 @@ export default class HueBridge {
       },
     } as unknown as dtls.Options);
 
-    return new Promise((resolve) => {
-      this.socket.on("connected", () => {
-        resolve();
-      });
-    });
+    return new Promise((resolve) => this.socket.on("connected", resolve));
   }
 
   stop() {
     if (!this.socket) {
       throw new Error("No active datagram socket!");
     }
+
     const id = this.entertainmentArea.id;
     this.socket.on("close", () => {
       this.updateEntertainmentArea(id, {
@@ -189,6 +183,7 @@ export default class HueBridge {
     this.abortionController.abort();
     this.entertainmentArea = null;
     this.abortionController = null;
+    this.socket = null;
   }
 
   // #NOTE: one [R,G,B] per channel

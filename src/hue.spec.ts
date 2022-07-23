@@ -369,14 +369,15 @@ describe("hue-sync", () => {
         fetchMock.mockOnce(JSON.stringify({ data: [mockResourceNode] }));
 
         await bridge.start(mockEntertainmentArea);
-
+        // @ts-ignore
         expect(bridge.socket).toBeDefined();
       });
 
       it("should be able to transmit an RGB array through Hue Entertainment API", async () => {
         await bridge.transition([justGreen]);
-
+        // @ts-ignore
         expect(bridge.socket.send.mock.calls.length).toBe(1);
+        // @ts-ignore
         expect(bridge.socket.send.mock.calls[0][0]).toBeInstanceOf(Buffer);
       });
 
