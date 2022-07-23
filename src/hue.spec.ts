@@ -1,6 +1,5 @@
-import * as https from "https";
 import fetchMock from "jest-fetch-mock";
-
+import mdnsMock from "./__mocks__/node-dns-sd";
 import HueBridge from "./hue";
 import {
   Light,
@@ -14,6 +13,7 @@ import {
 fetchMock.enableMocks();
 
 describe("hue-sync", () => {
+  const mockID = "foo-bar";
   const mockIp = "1.2.3.4";
   const mockCredentials: BridgeClientCredentials = {
     username: "foo",
@@ -25,13 +25,42 @@ describe("hue-sync", () => {
   });
 
   describe("static methods", () => {
-    it("should be able to discover Hue Bridge devices on the local network", async () => {
+    const mockBridgeNetworkDevice: HueBridgeNetworkDevice = {
+      id: "foo",
+      port: 123,
+      internalipaddress: "bar",
+    };
+
+    it("should be able to discover Hue Bridge devices via mDNS", async () => {
+      mdnsMock.discover.mockReturnValueOnce([
+        {
+          address: mockBridgeNetworkDevice.internalipaddress,
+          service: {
+            port: mockBridgeNetworkDevice.port,
+          },
+          packet: {
+            additionals: [
+              {
+                rdata: { bridgeid: mockBridgeNetworkDevice.id },
+              },
+            ],
+          },
+        },
+      ]);
+
+      const [bridgeOnNetwork] = await HueBridge.discover();
+
+      expect(bridgeOnNetwork).toEqual(mockBridgeNetworkDevice);
+      expect(mdnsMock.discover.mock.calls.length).toBe(1);
+    });
+
+    it("should be able to discover Hue Bridge devices via remote API", async () => {
       const mockBridgeNetworkDevice: HueBridgeNetworkDevice = {
         id: "foo",
         port: 123,
         internalipaddress: "bar",
       };
-
+      mdnsMock.discover.mockRejectedValueOnce(null);
       fetchMock.mockOnce(JSON.stringify([mockBridgeNetworkDevice]));
 
       const [bridgeOnNetwork] = await HueBridge.discover();
@@ -46,56 +75,11 @@ describe("hue-sync", () => {
 
       expect(credentials).toEqual(mockCredentials);
     });
-
-    it("should be able to retrieve Hue Bridge config information", async () => {
-      const mockConfig: BridgeConfig = {
-        name: "foo",
-        datastoreversion: "bar",
-        swversion: "baz",
-        apiversion: "lorem",
-        mac: "ipsum",
-        bridgeid: "dolor",
-        factorynew: false,
-        replacesbridgeid: "amet",
-        modelid: "consecutir",
-        starterkitid: "dolor",
-      };
-
-      fetchMock.mockOnce(JSON.stringify(mockConfig));
-
-      const config = await HueBridge.getInfo(mockIp);
-
-      expect(config).toEqual(mockConfig);
-    });
-  });
-
-  describe("constructor", () => {
-    it("should be able to create a HueBridge instance", () => {
-      const bridge = new HueBridge({
-        url: mockIp,
-        credentials: mockCredentials,
-      });
-
-      expect(bridge).toBeInstanceOf(HueBridge);
-    });
-
-    it("should be able to create a HueBridge instance with custom HTTP Agent", () => {
-      const bridge = new HueBridge({
-        url: mockIp,
-        credentials: mockCredentials,
-        httpAgent: new https.Agent()
-      });
-
-      expect(bridge).toBeInstanceOf(HueBridge);
-    });
-
-    it("should throw if initialized without url and credentials", () => {
-      expect(() => new HueBridge({})).toThrow();
-    })
   });
 
   describe("instance methods", () => {
     let bridge = new HueBridge({
+      id: mockID,
       url: mockIp,
       credentials: mockCredentials,
     });
@@ -256,6 +240,7 @@ describe("hue-sync", () => {
     describe("Read Methods", () => {
       beforeEach(() => {
         bridge = new HueBridge({
+          id: mockID,
           url: mockIp,
           credentials: mockCredentials,
         });
@@ -304,7 +289,37 @@ describe("hue-sync", () => {
       });
     });
 
+    it("should be able to retrieve Hue Bridge config information", async () => {
+      const mockConfig: BridgeConfig = {
+        name: "foo",
+        datastoreversion: "bar",
+        swversion: "baz",
+        apiversion: "lorem",
+        mac: "ipsum",
+        bridgeid: "dolor",
+        factorynew: false,
+        replacesbridgeid: "amet",
+        modelid: "consecutir",
+        starterkitid: "dolor",
+      };
+
+      fetchMock.mockOnce(JSON.stringify(mockConfig));
+
+      const config = await bridge.getInfo();
+
+      expect(config).toEqual(mockConfig);
+    });
+
     describe("Update Methods", () => {
+      beforeEach(() => {
+        bridge = new HueBridge({
+          id: mockID,
+          url: mockIp,
+          credentials: mockCredentials,
+        });
+        fetchMock.resetMocks();
+      });
+
       // Update Operations
       it("should update a given entertainment area", async () => {
         fetchMock.mockOnce(JSON.stringify({ data: [mockResourceNode] }));
@@ -318,21 +333,29 @@ describe("hue-sync", () => {
 
         expect(result).toEqual(mockResourceNode);
       });
+
+      it("should update a single light", async () => {
+        fetchMock.mockOnce(JSON.stringify({ data: [mockResourceNode] }));
+
+        const result = await bridge.updateLight(mockLight.id, {
+          on: { on: true },
+        });
+
+        expect(result).toEqual(mockResourceNode);
+      });
     });
 
     // Entertainment API Streaming
     describe("Streaming Entertainment API", () => {
-      it("should throw when calling stop with no active channel", async () => {
-        await expect(bridge.stop()).rejects.toThrow(
-          "No active datagram socket!"
-        );
+      it("should throw when calling stop with no active channel", () => {
+        try {
+          bridge.stop();
+        } catch (e) {
+          expect(e.message).toBe("No active datagram socket!");
+        }
       });
 
-      // #NOTE: this shit should work, its literally a copy-paste from above
       it("should throw when calling transition with no active channel", async () => {
-        // await expect(bridge.transition([justGreen])).rejects.toThrow(
-        //   "No active datagram socket!"
-        // );
         try {
           await bridge.transition([justGreen]);
         } catch (e) {
@@ -345,7 +368,7 @@ describe("hue-sync", () => {
 
         fetchMock.mockOnce(JSON.stringify({ data: [mockResourceNode] }));
 
-        await bridge.start(mockEntertainmentArea.id);
+        await bridge.start(mockEntertainmentArea);
 
         expect(bridge.socket).toBeDefined();
       });
@@ -359,10 +382,11 @@ describe("hue-sync", () => {
 
       it("should be able to close the dgram channel for an active entertainment area", async () => {
         fetchMock.mockOnce(JSON.stringify({ data: [mockResourceNode] }));
+        const abortSpy = jest.spyOn(AbortController.prototype, "abort");
 
         await bridge.stop();
 
-        expect(bridge.socket.close.mock.calls.length).toBe(1);
+        expect(abortSpy.mock.calls.length).toBe(1);
       });
     });
   });

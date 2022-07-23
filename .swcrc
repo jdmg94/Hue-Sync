@@ -10,10 +10,11 @@
   "module": {
     "type": "commonjs"
   },
-  "minify": false,
+  "minify": true,
   "exclude": [
     "node_modules",
     "src/__mocks__",
-    "spec.(ts|tsx)$"
+    "spec.(ts|tsx)$",
+    ".types.ts"
   ]
 }
