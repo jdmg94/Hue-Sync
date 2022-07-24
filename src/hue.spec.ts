@@ -287,27 +287,27 @@ describe("hue-sync", () => {
 
         expect(result).toEqual(mockLight);
       });
-    });
 
-    it("should be able to retrieve Hue Bridge config information", async () => {
-      const mockConfig: BridgeConfig = {
-        name: "foo",
-        datastoreversion: "bar",
-        swversion: "baz",
-        apiversion: "lorem",
-        mac: "ipsum",
-        bridgeid: "dolor",
-        factorynew: false,
-        replacesbridgeid: "amet",
-        modelid: "consecutir",
-        starterkitid: "dolor",
-      };
+      it("should be able to retrieve Hue Bridge config information", async () => {
+        const mockConfig: BridgeConfig = {
+          name: "foo",
+          datastoreversion: "bar",
+          swversion: "baz",
+          apiversion: "lorem",
+          mac: "ipsum",
+          bridgeid: "dolor",
+          factorynew: false,
+          replacesbridgeid: "amet",
+          modelid: "consecutir",
+          starterkitid: "dolor",
+        };
 
-      fetchMock.mockOnce(JSON.stringify(mockConfig));
+        fetchMock.mockOnce(JSON.stringify(mockConfig));
 
-      const config = await bridge.getInfo();
+        const config = await bridge.getInfo();
 
-      expect(config).toEqual(mockConfig);
+        expect(config).toEqual(mockConfig);
+      });
     });
 
     describe("Update Methods", () => {
@@ -320,7 +320,6 @@ describe("hue-sync", () => {
         fetchMock.resetMocks();
       });
 
-      // Update Operations
       it("should update a given entertainment area", async () => {
         fetchMock.mockOnce(JSON.stringify({ data: [mockResourceNode] }));
 
@@ -345,7 +344,6 @@ describe("hue-sync", () => {
       });
     });
 
-    // Entertainment API Streaming
     describe("Streaming Entertainment API", () => {
       it("should throw when calling stop with no active channel", () => {
         try {
