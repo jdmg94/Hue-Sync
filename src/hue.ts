@@ -485,7 +485,7 @@ export default class HueBridge {
     return this._unwrap(response)[0];
   }
 
-  // not implemented yet
+  // types not implemented yet
 
   // getEntertainmentServices() {}
   // getEntertainmentService(id: string) {}
@@ -511,6 +511,7 @@ export default class HueBridge {
   // getBehaviorScript(id: string) {}
 
   // Update
+
   async updateEntertainmentArea(
     id: string,
     updates: Partial<EntertainmentArea> & { action: string }
@@ -535,36 +536,111 @@ export default class HueBridge {
     return this._unwrap(response)[0];
   }
 
-  // not implemented yet
+  async updateScene(
+    id: string,
+    updates: Partial<Scene>
+  ): Promise<ResourceNode> {
+    const response = await this._request<JSONResponse<ResourceNode[]>>(
+      `https://${this.id}/clip/v2/resource/scene/${id}`,
+      { method: "PUT", body: updates }
+    );
+
+    return this._unwrap(response)[0];
+  }
+  async updateRoom(id: string, updates: Partial<Room>): Promise<ResourceNode> {
+    const response = await this._request<JSONResponse<ResourceNode[]>>(
+      `https://${this.id}/clip/v2/resource/room/${id}`,
+      { method: "PUT", body: updates }
+    );
+
+    return this._unwrap(response)[0];
+  }
+  async updateZone(id: string, updates: Partial<Zone>): Promise<ResourceNode> {
+    const response = await this._request<JSONResponse<ResourceNode[]>>(
+      `https://${this.id}/clip/v2/resource/zone/${id}`,
+      { method: "PUT", body: updates }
+    );
+
+    return this._unwrap(response)[0];
+  }
+  async updateHomeArea(
+    id: string,
+    updates: Partial<HomeArea>
+  ): Promise<ResourceNode> {
+    const response = await this._request<JSONResponse<ResourceNode[]>>(
+      `https://${this.id}/clip/v2/resource/bridge_home/${id}`,
+      { method: "PUT", body: updates }
+    );
+
+    return this._unwrap(response)[0];
+  }
+  async updateLightGroup(
+    id: string,
+    updates: Partial<LightGroup>
+  ): Promise<ResourceNode> {
+    const response = await this._request<JSONResponse<ResourceNode[]>>(
+      `https://${this.id}/clip/v2/resource/grouped_light/${id}`,
+      { method: "PUT", body: updates }
+    );
+
+    return this._unwrap(response)[0];
+  }
+  async updateDevice(
+    id: string,
+    updates: Partial<Device>
+  ): Promise<ResourceNode> {
+    const response = await this._request<JSONResponse<ResourceNode[]>>(
+      `https://${this.id}/clip/v2/resource/device/${id}`,
+      { method: "PUT", body: updates }
+    );
+
+    return this._unwrap(response)[0];
+  }
+  async updateBehaviorInstance(
+    id: string,
+    updates: Partial<BehaviourInstance>
+  ): Promise<ResourceNode> {
+    const response = await this._request<JSONResponse<ResourceNode[]>>(
+      `https://${this.id}/clip/v2/resource/behavior_instance/${id}`,
+      { method: "PUT", body: updates }
+    );
+
+    return this._unwrap(response)[0];
+  }
+  async updateGeoFenceClient(
+    id: string,
+    updates: Partial<GeoFenceClient>
+  ): Promise<ResourceNode> {
+    const response = await this._request<JSONResponse<ResourceNode[]>>(
+      `https://${this.id}/clip/v2/resource/geofecne_client/${id}`,
+      { method: "PUT", body: updates }
+    );
+
+    return this._unwrap(response)[0];
+  }
+
+  // types not implemented yet
   /*
-  
-  updateScene(id: string, updates: {}): Promise<ResourceNode> {}
-  updateRoom(id: string, updates: {}): Promise<ResourceNode> {}
-  updateZone(id: string, updates: {}): Promise<ResourceNode> {}
-  updateHomeArea(id: string, updates: {}): Promise<ResourceNode> {}
-  updateLightGroup(id: string, updates: {}): Promise<ResourceNode> {}
-  updateDevice(id: string, updates: {}): Promise<ResourceNode> {}
-  updateMotionService(id: string, updates: {}): Promise<ResourceNode> {}
-  updateTemperatureService(id: string, updates: {}): Promise<ResourceNode> {}
-  updateLightLevelService(id: string, updates: {}): Promise<ResourceNode> {}
-  updateButtonService(id: string, updates: {}): Promise<ResourceNode> {}
-  updateBehaviorInstance(id: string, updates: {}): Promise<ResourceNode> {}
-  updateGeoFenceClient(id: string, updates: {}): Promise<ResourceNode> {}
-  updateGeoLocationService(id: string, updates: {}): Promise<ResourceNode> {}
-  updateEntertainmentService(id: string, updates: {}): Promise<ResourceNode> {}
-  updateHomeKitService(id: string, updates: {}): Promise<ResourceNode> {}
-  updateDevicePowerService(id: string, updates: {}): Promise<ResourceNode> {}
-  updateZigbeeConnectivityService(
+  async updateMotionService(id: string, updates: {}): Promise<ResourceNode> {}
+  async updateTemperatureService(id: string, updates: {}): Promise<ResourceNode> {}
+  async updateLightLevelService(id: string, updates: {}): Promise<ResourceNode> {}
+  async updateButtonService(id: string, updates: {}): Promise<ResourceNode> {}
+  async updateGeoLocationService(id: string, updates: {}): Promise<ResourceNode> {}
+  async updateEntertainmentService(id: string, updates: {}): Promise<ResourceNode> {}
+  async updateHomeKitService(id: string, updates: {}): Promise<ResourceNode> {}
+  async updateDevicePowerService(id: string, updates: {}): Promise<ResourceNode> {}
+  async updateZigbeeConnectivityService(
     id: string,
     update: {}
   ): Promise<ResourceNode> {}
-  updateZigbeeGreenPowerService(
+  async updateZigbeeGreenPowerService(
     id: string,
     updates: {}
   ): Promise<ResourceNode> {}
   */
 
   // Delete
+
   async removeScene(id: string): Promise<ResourceNode> {
     const response = await this._request<JSONResponse<ResourceNode[]>>(
       `https://${this.id}/clip/v2/resource/scene/${id}`,

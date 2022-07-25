@@ -716,6 +716,66 @@ describe("Hue-Sync", () => {
         fetchMock.resetMocks();
       });
 
+      it("should update a single light", async () => {
+        fetchMock.mockOnce(JSON.stringify({ data: [mockResourceNode] }));
+
+        const result = await bridge.updateLight(mockLight.id, {
+          on: { on: true },
+        });
+
+        expect(result).toEqual(mockResourceNode);
+      });
+
+      it("should update a grouped light", async () => {
+        fetchMock.mockOnce(JSON.stringify({ data: [mockResourceNode] }));
+
+        const result = await bridge.updateLightGroup(mockLightGroup.id, {
+          on: { on: true },
+        });
+
+        expect(result).toEqual(mockResourceNode);
+      });
+
+      it("should update a scene", async () => {
+        fetchMock.mockOnce(JSON.stringify({ data: [mockResourceNode] }));
+
+        const result = await bridge.updateScene(mockScene.id, {
+          speed: 0,
+        });
+
+        expect(result).toEqual(mockResourceNode);
+      });
+
+      it("should update a room", async () => {
+        fetchMock.mockOnce(JSON.stringify({ data: [mockResourceNode] }));
+
+        const result = await bridge.updateRoom(mockRoom.id, {
+          services: [mockResourceNode],
+        });
+
+        expect(result).toEqual(mockResourceNode);
+      });
+
+      it("should update a zone", async () => {
+        fetchMock.mockOnce(JSON.stringify({ data: [mockResourceNode] }));
+
+        const result = await bridge.updateZone(mockZone.id, {
+          services: [mockResourceNode],
+        });
+
+        expect(result).toEqual(mockResourceNode);
+      });
+
+      it("should update a Home Area", async () => {
+        fetchMock.mockOnce(JSON.stringify({ data: [mockResourceNode] }));
+
+        const result = await bridge.updateHomeArea(mockHomeArea.id, {
+          services: [mockResourceNode],
+        });
+
+        expect(result).toEqual(mockResourceNode);
+      });
+
       it("should update a given entertainment area", async () => {
         fetchMock.mockOnce(JSON.stringify({ data: [mockResourceNode] }));
 
@@ -729,12 +789,38 @@ describe("Hue-Sync", () => {
         expect(result).toEqual(mockResourceNode);
       });
 
-      it("should update a single light", async () => {
+      it("should update a Geo Fence Client", async () => {
         fetchMock.mockOnce(JSON.stringify({ data: [mockResourceNode] }));
 
-        const result = await bridge.updateLight(mockLight.id, {
-          on: { on: true },
+        const result = await bridge.updateGeoFenceClient(
+          mockGeoFenceClient.id,
+          {
+            name: "foo",
+          }
+        );
+
+        expect(result).toEqual(mockResourceNode);
+      });
+
+      it("should update a device", async () => {
+        fetchMock.mockOnce(JSON.stringify({ data: [mockResourceNode] }));
+
+        const result = await bridge.updateDevice(mockDevice.id, {
+          metadata: { archetype: "unknown_archetype" },
         });
+
+        expect(result).toEqual(mockResourceNode);
+      });
+
+      it("should update a behavior instance", async () => {
+        fetchMock.mockOnce(JSON.stringify({ data: [mockResourceNode] }));
+
+        const result = await bridge.updateBehaviorInstance(
+          mockBehaviorInstance.id,
+          {
+            enabled: true,
+          }
+        );
 
         expect(result).toEqual(mockResourceNode);
       });
