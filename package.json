@@ -1,6 +1,6 @@
 {
   "name": "hue-sync",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A Library for Phillips Hue Clip API v2 written in Typescript",
   "main": "build/index.js",
   "scripts": {
