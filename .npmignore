@@ -104,3 +104,10 @@ dist
 .tern-port
 
 .DS_Store
+src
+assets
+jest.config.js
+tsconfig.json
+global.d.ts
+client.json
+.swcrc

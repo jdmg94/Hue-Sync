@@ -1,6 +1,6 @@
 {
   "name": "hue-sync",
-  "version": "0.0.8",
+  "version": "0.1.1",
   "description": "A Library for Phillips Hue Clip API v2 written in Typescript",
   "main": "build/index.js",
   "scripts": {
@@ -20,7 +20,7 @@
   "bugs": {
     "url": "https://github.com/jdmg94/Hue-Sync/issues"
   },
-  "homepage": "https://github.com/jdmg94/Hue-Sync#readme",
+  "homepage": "https://github.com/jdmg94/Hue-Sync",
   "devDependencies": {
     "@swc-node/jest": "^1.4.3",
     "@swc/cli": "^0.1.57",
