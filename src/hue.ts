@@ -8,7 +8,7 @@ import type {
   Scene,
   Device,
   LightGroup,
-  BridgeHome,
+  HomeArea,
   JSONResponse,
   ResourceNode,
   BridgeConfig,
@@ -286,6 +286,20 @@ export default class HueBridge {
     return this._unwrap(response)[0];
   }
 
+  async addGeoFenceClient(
+    data: Pick<GeoFenceClient, "name" | "is_at_home" | "type">
+  ): Promise<ResourceNode> {
+    const response = await this._request<JSONResponse<ResourceNode[]>>(
+      `https://${this.id}/clip/v2/resource/geofence_client`,
+      {
+        method: "POST",
+        body: data,
+      }
+    );
+
+    return this._unwrap(response)[0];
+  }
+
   async addBehaviorInstance(
     data: Pick<
       BehaviourInstance,
@@ -299,19 +313,6 @@ export default class HueBridge {
   ): Promise<ResourceNode> {
     const response = await this._request<JSONResponse<ResourceNode[]>>(
       `https://${this.id}/clip/v2/resource/behavior_instance`,
-      {
-        method: "POST",
-        body: data,
-      }
-    );
-
-    return this._unwrap(response)[0];
-  }
-  async addGeoFenceClient(
-    data: Pick<GeoFenceClient, "name" | "is_at_home" | "type">
-  ): Promise<ResourceNode> {
-    const response = await this._request<JSONResponse<ResourceNode[]>>(
-      `https://${this.id}/clip/v2/resource/geofence_client`,
       {
         method: "POST",
         body: data,
@@ -343,7 +344,7 @@ export default class HueBridge {
     return this._unwrap(response)[0];
   }
 
-  async getGroupedLights() {
+  async getLightGroups() {
     const response = await this._request<JSONResponse<LightGroup[]>>(
       `https://${this.id}/clip/v2/resource/grouped_light`
     );
@@ -423,16 +424,16 @@ export default class HueBridge {
     return this._unwrap(response)[0];
   }
 
-  async getHomeAreas(): Promise<BridgeHome[]> {
-    const response = await this._request<JSONResponse<BridgeHome[]>>(
+  async getHomeAreas(): Promise<HomeArea[]> {
+    const response = await this._request<JSONResponse<HomeArea[]>>(
       `https://${this.id}/clip/v2/resource/bridge_home`
     );
 
     return this._unwrap(response);
   }
 
-  async getHomeArea(id: string): Promise<BridgeHome> {
-    const response = await this._request<JSONResponse<BridgeHome[]>>(
+  async getHomeArea(id: string): Promise<HomeArea> {
+    const response = await this._request<JSONResponse<HomeArea[]>>(
       `https://${this.id}/clip/v2/resource/bridge_home/${id}`
     );
 
@@ -574,6 +575,7 @@ export default class HueBridge {
 
     return this._unwrap(response)[0];
   }
+
   async removeRoom(id: string): Promise<ResourceNode> {
     const response = await this._request<JSONResponse<ResourceNode[]>>(
       `https://${this.id}/clip/v2/resource/room/${id}`,
@@ -584,6 +586,7 @@ export default class HueBridge {
 
     return this._unwrap(response)[0];
   }
+
   async removeZone(id: string): Promise<ResourceNode> {
     const response = await this._request<JSONResponse<ResourceNode[]>>(
       `https://${this.id}/clip/v2/resource/zone/${id}`,
@@ -594,6 +597,7 @@ export default class HueBridge {
 
     return this._unwrap(response)[0];
   }
+
   async removeBehaviorInstance(id: string): Promise<ResourceNode> {
     const response = await this._request<JSONResponse<ResourceNode[]>>(
       `https://${this.id}/clip/v2/resource/behavior_instance/${id}`,
@@ -604,6 +608,7 @@ export default class HueBridge {
 
     return this._unwrap(response)[0];
   }
+
   async removeGeoFenceClient(id: string): Promise<ResourceNode> {
     const response = await this._request<JSONResponse<ResourceNode[]>>(
       `https://${this.id}/clip/v2/resource/geofence_client/${id}`,
@@ -614,6 +619,7 @@ export default class HueBridge {
 
     return this._unwrap(response)[0];
   }
+
   async removeEntertainmentArea(id: string): Promise<ResourceNode> {
     const response = await this._request<JSONResponse<ResourceNode[]>>(
       `https://${this.id}/clip/v2/resource/entertainment_configuration/${id}`,

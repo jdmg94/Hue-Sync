@@ -74,11 +74,11 @@ interface ServiceLocation {
 
 export interface EntertainmentArea extends BaseResouce {
   name: string;
+  metadata: { name: string };
   channels: EntertainmentAreaChannel[];
   configuration_type: string;
   light_services: ResourceNode[];
   locations: { service_locations: ServiceLocation[] };
-  metadata: { name: string };
   status: string;
   stream_proxy: {
     mode: string;
@@ -121,7 +121,7 @@ export interface Light extends BaseResouce {
     status_values: string[];
   };
   gradient?: { points: Array<{ color: { xy: xy } }>; points_capable: number };
-  metadata: { archetype: string; name: string };
+  metadata: { archetype?: string; name: string };
   mode: string;
   on: OnState;
   owner: ResourceNode;
@@ -130,50 +130,50 @@ export interface Light extends BaseResouce {
 interface SceneAction {
   target: ResourceNode;
   action: {
-    on: OnState;
-    dimming: LightDimming;
-    color_temperature: { mirek: number };
+    on?: OnState;
+    dimming?: LightDimming;
+    color_temperature?: { mirek: number };
   };
 }
 
 export interface Scene extends BaseResouce {
-  actions: SceneAction[];
+  speed?: number;
   group: ResourceNode;
+  actions: SceneAction[];
   metadata: {
-    image: ResourceNode;
+    image?: ResourceNode;
     name: string;
   };
-  palette: {
+  palette?: {
     color: xy;
     dimming: LightDimming;
     color_temperature: Array<{
       color_temperature: { mirek: number };
-      dimming: LightDimming;
+      dimming?: LightDimming;
     }>;
   };
-  speed: number;
 }
 
 export interface Room extends BaseResouce {
   children: ResourceNode[];
-  grouped_services: ResourceNode[];
-  metadata: { archetype: string; name: string };
-  services: ResourceNode[];
+  grouped_services?: ResourceNode[];
+  metadata: { archetype?: string; name: string };
+  services?: ResourceNode[];
 }
 
 export interface Zone extends BaseResouce {
   children: ResourceNode[];
-  services: ResourceNode[];
-  grouped_services: ResourceNode[];
+  services?: ResourceNode[];
+  grouped_services?: ResourceNode[];
   metadata: {
     name: string;
-    archetype: string;
+    archetype?: string;
   };
 }
 
 export interface Device extends BaseResouce {
   services: ResourceNode[];
-  metadata: { archetype: string; name: string };
+  metadata: { archetype?: string; name: string };
   product_data: {
     certified: boolean;
     manufacturer_name: string;
@@ -184,7 +184,7 @@ export interface Device extends BaseResouce {
   };
 }
 
-export interface BridgeHome extends BaseResouce {
+export interface HomeArea extends BaseResouce {
   children: ResourceNode[];
   grouped_services: ResourceNode[];
   services: ResourceNode[];
@@ -193,6 +193,27 @@ export interface BridgeHome extends BaseResouce {
 export interface LightGroup extends BaseResouce {
   alert: { action_values: string[] };
   on: OnState;
+}
+
+export interface GeoFenceClient extends BaseResouce {
+  is_at_home?: boolean;
+  name: string;
+}
+
+export interface BehaviourInstance extends BaseResouce {
+  script_id: string;
+  enabled: boolean;
+  state?: {};
+  configuration: {};
+  last_error?: string;
+  migrated_from?: string;
+  metadata: { name: string };
+  status: "initializing" | "running" | "disabled" | "errored";
+  dependees: Array<{
+    type: string;
+    target: ResourceNode;
+    level: "critical" | "non_critical";
+  }>;
 }
 
 export interface HueBridgeNetworkDevice {
@@ -217,25 +238,4 @@ export interface BridgeConfig {
   replacesbridgeid?: string;
   modelid: string;
   starterkitid?: string;
-}
-
-export interface GeoFenceClient extends BaseResouce {
-  is_at_home?: boolean;
-  name: string;
-}
-
-export interface BehaviourInstance extends BaseResouce {
-  script_id: string;
-  enabled: boolean;
-  state?: {};
-  configuration: {};
-  last_error: string;
-  migrated_from?: string;
-  metadata: { name: string };
-  status: 'initializing' | 'running' | 'disabled' | 'errored';
-  dependees: Array<{
-    type: string;
-    target: ResourceNode;
-    level: "critical" | "non_critical";
-  }>;
 }
