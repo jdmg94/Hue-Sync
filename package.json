@@ -9,7 +9,8 @@
     "clean": "rm -rf build",
     "declarations": "tsc",
     "transpile": "swc src -d build",
-    "build": "npm run clean && npm run transpile && npm run declarations"
+    "build": "npm run clean && npm run transpile && npm run declarations",
+    "publish": "npm run build && npm publish"
   },
   "repository": {
     "type": "git",
