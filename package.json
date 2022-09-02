@@ -1,6 +1,6 @@
 {
   "name": "hue-sync",
-  "version": "0.1.1",
+  "version": "0.1.3",
   "description": "A Library for Phillips Hue Clip API v2 written in Typescript",
   "main": "build/index.js",
   "scripts": {
@@ -9,7 +9,8 @@
     "clean": "rm -rf build",
     "declarations": "tsc",
     "transpile": "swc src -d build",
-    "build": "npm run clean && npm run transpile && npm run declarations"
+    "build": "npm run clean && npm run transpile && npm run declarations",
+    "publish": "npm run build && npm publish"
   },
   "repository": {
     "type": "git",
