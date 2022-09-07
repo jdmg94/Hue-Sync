@@ -38,11 +38,9 @@
 </p>
 
 <h4>
-    <a href="https://github.com/jdmg94/hue-sync/README.md">Documentation</a>
+    <a href="https://github.com/jdmg94/Hue-Sync/blob/main/README.md">Documentation</a>
   <span> · </span>
-    <a href="https://github.com/jdmg94/hue-sync/issues/">Report Bug</a>
-  <span> · </span>
-    <a href="https://github.com/jdmg94/hue-sync/issues/">Request Feature</a>
+    <a href="https://github.com/jdmg94/hue-sync/issues/">Report Bug or Request Feature</a>
   </h4>
 </div>
 
