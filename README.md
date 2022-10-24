@@ -55,7 +55,6 @@
 - [Usage](#usage)
   - [Entertainment API](#entertainment-api)
   - [With HTTPS](#usage-with-https)
-- [Roadmap](#roadmap)
 - [Contributing](#contributing)
 - [License](#license)
 - [Contact](#contact)
