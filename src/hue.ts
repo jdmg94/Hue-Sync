@@ -30,7 +30,7 @@ const patchDNS = (domain: string, ip: string) => {
   const originalLookup: LookupFunction = dns.lookup;
   const newLookup: LookupFunction = (domain, options, callback) => {
     if (query.test(domain)) {
-      return callback(null, ip, 4);
+      return callback(null, [{ family: 4, address: ip }]);
     }
 
     return originalLookup(domain, options, callback);
@@ -189,7 +189,7 @@ export default class HueBridge {
   }
 
   // #NOTE: one [R,G,B] per channel
-  transition(colors: Array<[number, number, number]>) {
+  transition(colors: number[][]) {
     if (!this.socket) {
       throw new Error("No active datagram socket!");
     }
