@@ -24,13 +24,20 @@ if (!globalThis.fetch) {
   require("cross-fetch/polyfill");
 }
 
+const getNodeVersion = () => parseFloat(process.version.substring(1));
+
 const patchDNS = (domain: string, ip: string) => {
   const dns = require("dns");
   const query = new RegExp(domain, "i");
   const originalLookup: LookupFunction = dns.lookup;
   const newLookup: LookupFunction = (domain, options, callback) => {
     if (query.test(domain)) {
-      return callback(null, [{ family: 4, address: ip }]);
+      if (getNodeVersion() >= 20){
+        return callback(null, [{ family: 4, address: ip }]);
+      } else {
+        // @ts-ignore
+        return callback(null, ip, 4);
+      }
     }
 
     return originalLookup(domain, options, callback);
@@ -46,7 +53,7 @@ export default class HueBridge {
         name: "_hue._tcp.local",
       });
 
-      return localSearch.map((item) => {
+      return localSearch.map((item) => {        
         const port = item.service.port;
         const internalipaddress = item.address;
         const [buffer] = item.packet.additionals;
