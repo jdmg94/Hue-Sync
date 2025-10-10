@@ -3,7 +3,7 @@ export interface HueBridgeArgs {
     url: string;
     credentials: BridgeClientCredentials;
 }
-export type JSONResponse<T extends {}> = {
+export declare type JSONResponse<T extends {}> = {
     errors?: Error[];
     data: T;
 };

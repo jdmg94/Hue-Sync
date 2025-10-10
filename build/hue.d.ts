@@ -13,7 +13,7 @@ export default class HueBridge {
     private _unwrap;
     start(selectedArea: EntertainmentArea, timeout?: number): Promise<void>;
     stop(): void;
-    transition(colors: number[][]): void;
+    transition(colors: Array<[number, number, number]>): void;
     addScene(data: Pick<Scene, "metadata" | "group" | "actions">): Promise<ResourceNode>;
     addRoom(data: Pick<Room, "metadata" | "children">): Promise<ResourceNode>;
     addZone(data: Pick<Zone, "metadata" | "children">): Promise<ResourceNode>;
