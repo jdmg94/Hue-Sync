@@ -9,6 +9,10 @@
     ],
     "compilerOptions": {
         "lib": [ "es2016", "dom" ],
+        "types": [ "vitest/globals", "node" ],
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "skipLibCheck": true,
         // Generate d.ts files
         "declaration": true,
         // This compiler run should
@@ -20,6 +24,6 @@
         "outDir": "build",
         // go to js file when using IDE functions like
         // "Go to Definition" in VSCode
-        "declarationMap": false        
+        "declarationMap": false
     }
 }

@@ -1,5 +1,4 @@
-import fetchMock from "jest-fetch-mock";
-import mdnsMock from "./__mocks__/node-dns-sd";
+import { vi, describe, it, expect, beforeEach } from "vitest";
 import HueBridge from "./hue";
 import {
   Light,
@@ -20,7 +19,26 @@ import {
 
 // Mocks
 
-fetchMock.enableMocks();
+vi.mock("node-dns-sd", () => ({
+  default: {
+    discover: vi.fn(),
+  },
+}));
+
+vi.mock("node-dtls-client", () => ({
+  dtls: {
+    createSocket: vi.fn(() => ({
+      send: vi.fn(),
+      on: vi.fn((event, callback) => {
+        if (event === "connected" || event === "close") callback();
+      }),
+    })),
+  },
+}));
+
+// Get the mocked modules
+const mdnsMock = await import("node-dns-sd").then(m => m.default);
+const { dtls: dtlsMock } = await import("node-dtls-client");
 
 const mockID = "foo-bar";
 const mockIp = "1.2.3.4";
@@ -308,9 +326,20 @@ const mockDevice2: Device = {
   },
 };
 
+// Setup global fetch mock
+globalThis.fetch = vi.fn() as any;
+
+const mockFetchResponse = (data: any) => {
+  vi.mocked(globalThis.fetch).mockResolvedValueOnce({
+    json: async () => (typeof data === 'string' ? JSON.parse(data) : data),
+    ok: true,
+    status: 200,
+  } as any);
+};
+
 describe("Hue-Sync", () => {
-  afterEach(() => {
-    fetchMock.resetMocks();
+  beforeEach(() => {
+    vi.clearAllMocks();
   });
 
   describe("static methods", () => {
@@ -350,7 +379,7 @@ describe("Hue-Sync", () => {
         internalipaddress: "bar",
       };
       mdnsMock.discover.mockRejectedValueOnce(null);
-      fetchMock.mockOnce(JSON.stringify([mockBridgeNetworkDevice]));
+      mockFetchResponse(JSON.stringify([mockBridgeNetworkDevice]));
 
       const [bridgeOnNetwork] = await HueBridge.discover();
 
@@ -358,7 +387,7 @@ describe("Hue-Sync", () => {
     });
 
     it("should be able to register hue-sync on Hue Bridge device", async () => {
-      fetchMock.mockOnce(JSON.stringify([{ success: mockCredentials }]));
+      mockFetchResponse(JSON.stringify([{ success: mockCredentials }]));
 
       const credentials = await HueBridge.register(mockIp);
 
@@ -375,7 +404,7 @@ describe("Hue-Sync", () => {
 
     describe("Create Methods", () => {
       it("should be able to add an Entertainment Area", async () => {
-        fetchMock.mockOnce(JSON.stringify({ data: [mockEntertainmentArea] }));
+        mockFetchResponse(JSON.stringify({ data: [mockEntertainmentArea] }));
 
         const result = await bridge.addEntertainmentArea({
           metadata: {
@@ -400,7 +429,7 @@ describe("Hue-Sync", () => {
       });
 
       it("should be able to add a new Scene", async () => {
-        fetchMock.mockOnce(JSON.stringify({ data: [mockScene] }));
+        mockFetchResponse(JSON.stringify({ data: [mockScene] }));
 
         const result = await bridge.addScene({
           metadata: {
@@ -419,7 +448,7 @@ describe("Hue-Sync", () => {
       });
 
       it("should be able to add a new Room", async () => {
-        fetchMock.mockOnce(JSON.stringify({ data: [mockRoom] }));
+        mockFetchResponse(JSON.stringify({ data: [mockRoom] }));
 
         const result = await bridge.addRoom({
           metadata: {
@@ -432,7 +461,7 @@ describe("Hue-Sync", () => {
       });
 
       it("should be able to add a new Zone", async () => {
-        fetchMock.mockOnce(JSON.stringify({ data: [mockZone] }));
+        mockFetchResponse(JSON.stringify({ data: [mockZone] }));
 
         const result = await bridge.addZone({
           children: [mockResourceNode],
@@ -445,7 +474,7 @@ describe("Hue-Sync", () => {
       });
 
       it("should be able to add a new Geo Fence Client", async () => {
-        fetchMock.mockOnce(JSON.stringify({ data: [mockGeoFenceClient] }));
+        mockFetchResponse(JSON.stringify({ data: [mockGeoFenceClient] }));
 
         const result = await bridge.addGeoFenceClient({
           name: "foo",
@@ -457,7 +486,7 @@ describe("Hue-Sync", () => {
       });
 
       it("should be able to add a new Behavior Instance", async () => {
-        fetchMock.mockOnce(JSON.stringify({ data: [mockBehaviorInstance] }));
+        mockFetchResponse(JSON.stringify({ data: [mockBehaviorInstance] }));
 
         const result = await bridge.addBehaviorInstance({
           enabled: true,
@@ -478,11 +507,11 @@ describe("Hue-Sync", () => {
           url: mockIp,
           credentials: mockCredentials,
         });
-        fetchMock.resetMocks();
+        vi.clearAllMocks();
       });
 
       it("should get all Lights", async () => {
-        fetchMock.mockOnce(
+        mockFetchResponse(
           JSON.stringify({
             data: [mockLight, secondMockLight],
           })
@@ -496,7 +525,7 @@ describe("Hue-Sync", () => {
       });
 
       it("should get all Light Groups", async () => {
-        fetchMock.mockOnce(
+        mockFetchResponse(
           JSON.stringify({
             data: [mockLightGroup, mockLightGroup2],
           })
@@ -510,7 +539,7 @@ describe("Hue-Sync", () => {
       });
 
       it("should be able to retrieve all Scenes", async () => {
-        fetchMock.mockOnce(JSON.stringify({ data: [mockScene, mockScene] }));
+        mockFetchResponse(JSON.stringify({ data: [mockScene, mockScene] }));
 
         const result = await bridge.getScenes();
 
@@ -519,7 +548,7 @@ describe("Hue-Sync", () => {
       });
 
       it("should be able to retrieve all Rooms", async () => {
-        fetchMock.mockOnce(JSON.stringify({ data: [mockRoom, mockRoom] }));
+        mockFetchResponse(JSON.stringify({ data: [mockRoom, mockRoom] }));
 
         const result = await bridge.getRooms();
 
@@ -528,7 +557,7 @@ describe("Hue-Sync", () => {
       });
 
       it("should be able to retrieve all Zones", async () => {
-        fetchMock.mockOnce(JSON.stringify({ data: [mockZone, mockZone] }));
+        mockFetchResponse(JSON.stringify({ data: [mockZone, mockZone] }));
 
         const result = await bridge.getZones();
 
@@ -537,7 +566,7 @@ describe("Hue-Sync", () => {
       });
 
       it("should get all the Home Areas", async () => {
-        fetchMock.mockOnce(JSON.stringify({ data: [mockHomeArea] }));
+        mockFetchResponse(JSON.stringify({ data: [mockHomeArea] }));
 
         const result = await bridge.getHomeAreas();
 
@@ -546,7 +575,7 @@ describe("Hue-Sync", () => {
       });
 
       it("should get all the Entertainment Areas", async () => {
-        fetchMock.mockOnce(JSON.stringify({ data: [mockEntertainmentArea] }));
+        mockFetchResponse(JSON.stringify({ data: [mockEntertainmentArea] }));
 
         const result = await bridge.getEntertainmentAreas();
 
@@ -555,7 +584,7 @@ describe("Hue-Sync", () => {
       });
 
       it("should be able to retrieve All Geo Fence Clients", async () => {
-        fetchMock.mockOnce(
+        mockFetchResponse(
           JSON.stringify({ data: [mockGeoFenceClient, mockGeoFenceClient] })
         );
 
@@ -566,7 +595,7 @@ describe("Hue-Sync", () => {
       });
 
       it("should be able to retrieve All Behavior Instances", async () => {
-        fetchMock.mockOnce(
+        mockFetchResponse(
           JSON.stringify({ data: [mockBehaviorInstance, mockBehaviorInstance] })
         );
 
@@ -577,7 +606,7 @@ describe("Hue-Sync", () => {
       });
 
       it("should get all registered Devices", async () => {
-        fetchMock.mockOnce(
+        mockFetchResponse(
           JSON.stringify({
             data: [mockDevice, mockDevice2],
           })
@@ -606,7 +635,7 @@ describe("Hue-Sync", () => {
           starterkitid: "dolor",
         };
 
-        fetchMock.mockOnce(JSON.stringify(mockConfig));
+        mockFetchResponse(JSON.stringify(mockConfig));
 
         const config = await bridge.getInfo();
 
@@ -614,7 +643,7 @@ describe("Hue-Sync", () => {
       });
 
       it("should get a specific Light", async () => {
-        fetchMock.mockOnce(JSON.stringify({ data: [mockLight] }));
+        mockFetchResponse(JSON.stringify({ data: [mockLight] }));
 
         const result = await bridge.getLight(mockLight.id);
 
@@ -622,7 +651,7 @@ describe("Hue-Sync", () => {
       });
 
       it("should get a specific Light Group", async () => {
-        fetchMock.mockOnce(
+        mockFetchResponse(
           JSON.stringify({
             data: [mockLightGroup],
           })
@@ -634,7 +663,7 @@ describe("Hue-Sync", () => {
       });
 
       it("should be able to retrieve a specific Scene", async () => {
-        fetchMock.mockOnce(JSON.stringify({ data: [mockScene] }));
+        mockFetchResponse(JSON.stringify({ data: [mockScene] }));
 
         const result = await bridge.getScene(mockScene.id);
 
@@ -642,7 +671,7 @@ describe("Hue-Sync", () => {
       });
 
       it("should be able to retrieve a specific Room", async () => {
-        fetchMock.mockOnce(JSON.stringify({ data: [mockRoom] }));
+        mockFetchResponse(JSON.stringify({ data: [mockRoom] }));
 
         const result = await bridge.getRoom(mockRoom.id);
 
@@ -650,7 +679,7 @@ describe("Hue-Sync", () => {
       });
 
       it("should be able to retrieve a specific Zone", async () => {
-        fetchMock.mockOnce(JSON.stringify({ data: [mockZone] }));
+        mockFetchResponse(JSON.stringify({ data: [mockZone] }));
 
         const result = await bridge.getZone(mockZone.id);
 
@@ -658,7 +687,7 @@ describe("Hue-Sync", () => {
       });
 
       it("should get a specific Home Area", async () => {
-        fetchMock.mockOnce(JSON.stringify({ data: [mockHomeArea] }));
+        mockFetchResponse(JSON.stringify({ data: [mockHomeArea] }));
 
         const result = await bridge.getHomeArea(mockHomeArea.id);
 
@@ -666,7 +695,7 @@ describe("Hue-Sync", () => {
       });
 
       it("should get a specific Entertainment Area", async () => {
-        fetchMock.mockOnce(JSON.stringify({ data: [mockEntertainmentArea] }));
+        mockFetchResponse(JSON.stringify({ data: [mockEntertainmentArea] }));
 
         const result = await bridge.getEntertainmentArea(
           mockEntertainmentArea.id
@@ -676,7 +705,7 @@ describe("Hue-Sync", () => {
       });
 
       it("should be able to retrieve a specific Geo Fence Client", async () => {
-        fetchMock.mockOnce(JSON.stringify({ data: [mockGeoFenceClient] }));
+        mockFetchResponse(JSON.stringify({ data: [mockGeoFenceClient] }));
 
         const result = await bridge.getGeoFenceClient(mockGeoFenceClient.id);
 
@@ -684,7 +713,7 @@ describe("Hue-Sync", () => {
       });
 
       it("should be able to retrieve a specific Behavior Instance", async () => {
-        fetchMock.mockOnce(JSON.stringify({ data: [mockBehaviorInstance] }));
+        mockFetchResponse(JSON.stringify({ data: [mockBehaviorInstance] }));
 
         const result = await bridge.getBehaviorInstance(
           mockBehaviorInstance.id
@@ -694,7 +723,7 @@ describe("Hue-Sync", () => {
       });
 
       it("should get a specific registered Device", async () => {
-        fetchMock.mockOnce(
+        mockFetchResponse(
           JSON.stringify({
             data: [mockDevice],
           })
@@ -713,11 +742,11 @@ describe("Hue-Sync", () => {
           url: mockIp,
           credentials: mockCredentials,
         });
-        fetchMock.resetMocks();
+        vi.clearAllMocks();
       });
 
       it("should update a single light", async () => {
-        fetchMock.mockOnce(JSON.stringify({ data: [mockResourceNode] }));
+        mockFetchResponse(JSON.stringify({ data: [mockResourceNode] }));
 
         const result = await bridge.updateLight(mockLight.id, {
           on: { on: true },
@@ -727,7 +756,7 @@ describe("Hue-Sync", () => {
       });
 
       it("should update a grouped light", async () => {
-        fetchMock.mockOnce(JSON.stringify({ data: [mockResourceNode] }));
+        mockFetchResponse(JSON.stringify({ data: [mockResourceNode] }));
 
         const result = await bridge.updateLightGroup(mockLightGroup.id, {
           on: { on: true },
@@ -737,7 +766,7 @@ describe("Hue-Sync", () => {
       });
 
       it("should update a scene", async () => {
-        fetchMock.mockOnce(JSON.stringify({ data: [mockResourceNode] }));
+        mockFetchResponse(JSON.stringify({ data: [mockResourceNode] }));
 
         const result = await bridge.updateScene(mockScene.id, {
           speed: 0,
@@ -747,7 +776,7 @@ describe("Hue-Sync", () => {
       });
 
       it("should update a room", async () => {
-        fetchMock.mockOnce(JSON.stringify({ data: [mockResourceNode] }));
+        mockFetchResponse(JSON.stringify({ data: [mockResourceNode] }));
 
         const result = await bridge.updateRoom(mockRoom.id, {
           services: [mockResourceNode],
@@ -757,7 +786,7 @@ describe("Hue-Sync", () => {
       });
 
       it("should update a zone", async () => {
-        fetchMock.mockOnce(JSON.stringify({ data: [mockResourceNode] }));
+        mockFetchResponse(JSON.stringify({ data: [mockResourceNode] }));
 
         const result = await bridge.updateZone(mockZone.id, {
           services: [mockResourceNode],
@@ -767,7 +796,7 @@ describe("Hue-Sync", () => {
       });
 
       it("should update a Home Area", async () => {
-        fetchMock.mockOnce(JSON.stringify({ data: [mockResourceNode] }));
+        mockFetchResponse(JSON.stringify({ data: [mockResourceNode] }));
 
         const result = await bridge.updateHomeArea(mockHomeArea.id, {
           services: [mockResourceNode],
@@ -777,7 +806,7 @@ describe("Hue-Sync", () => {
       });
 
       it("should update a given entertainment area", async () => {
-        fetchMock.mockOnce(JSON.stringify({ data: [mockResourceNode] }));
+        mockFetchResponse(JSON.stringify({ data: [mockResourceNode] }));
 
         const result = await bridge.updateEntertainmentArea(
           mockEntertainmentArea.id,
@@ -790,7 +819,7 @@ describe("Hue-Sync", () => {
       });
 
       it("should update a Geo Fence Client", async () => {
-        fetchMock.mockOnce(JSON.stringify({ data: [mockResourceNode] }));
+        mockFetchResponse(JSON.stringify({ data: [mockResourceNode] }));
 
         const result = await bridge.updateGeoFenceClient(
           mockGeoFenceClient.id,
@@ -803,7 +832,7 @@ describe("Hue-Sync", () => {
       });
 
       it("should update a device", async () => {
-        fetchMock.mockOnce(JSON.stringify({ data: [mockResourceNode] }));
+        mockFetchResponse(JSON.stringify({ data: [mockResourceNode] }));
 
         const result = await bridge.updateDevice(mockDevice.id, {
           metadata: { archetype: "unknown_archetype" },
@@ -813,7 +842,7 @@ describe("Hue-Sync", () => {
       });
 
       it("should update a behavior instance", async () => {
-        fetchMock.mockOnce(JSON.stringify({ data: [mockResourceNode] }));
+        mockFetchResponse(JSON.stringify({ data: [mockResourceNode] }));
 
         const result = await bridge.updateBehaviorInstance(
           mockBehaviorInstance.id,
@@ -828,28 +857,28 @@ describe("Hue-Sync", () => {
 
     describe("Delete Methods", () => {
       it("should be able to remove a Scene by ID", async () => {
-        fetchMock.mockOnce(JSON.stringify({ data: [mockResourceNode] }));
+        mockFetchResponse(JSON.stringify({ data: [mockResourceNode] }));
 
         const actualResult = await bridge.removeScene(mockResourceNode.rid);
 
         expect(actualResult).toEqual(mockResourceNode);
       });
       it("should be able to remove a Room by ID", async () => {
-        fetchMock.mockOnce(JSON.stringify({ data: [mockResourceNode] }));
+        mockFetchResponse(JSON.stringify({ data: [mockResourceNode] }));
 
         const actualResult = await bridge.removeRoom(mockResourceNode.rid);
 
         expect(actualResult).toEqual(mockResourceNode);
       });
       it("should be able to remove a Zone by ID", async () => {
-        fetchMock.mockOnce(JSON.stringify({ data: [mockResourceNode] }));
+        mockFetchResponse(JSON.stringify({ data: [mockResourceNode] }));
 
         const actualResult = await bridge.removeZone(mockResourceNode.rid);
 
         expect(actualResult).toEqual(mockResourceNode);
       });
       it("should be able to remove an Entertainment Area by ID", async () => {
-        fetchMock.mockOnce(JSON.stringify({ data: [mockResourceNode] }));
+        mockFetchResponse(JSON.stringify({ data: [mockResourceNode] }));
 
         const actualResult = await bridge.removeEntertainmentArea(
           mockResourceNode.rid
@@ -858,7 +887,7 @@ describe("Hue-Sync", () => {
         expect(actualResult).toEqual(mockResourceNode);
       });
       it("should be able to remove a Geo Fence Client by ID", async () => {
-        fetchMock.mockOnce(JSON.stringify({ data: [mockResourceNode] }));
+        mockFetchResponse(JSON.stringify({ data: [mockResourceNode] }));
 
         const actualResult = await bridge.removeGeoFenceClient(
           mockResourceNode.rid
@@ -867,7 +896,7 @@ describe("Hue-Sync", () => {
         expect(actualResult).toEqual(mockResourceNode);
       });
       it("should be able to remove a Behavior Instance by ID", async () => {
-        fetchMock.mockOnce(JSON.stringify({ data: [mockResourceNode] }));
+        mockFetchResponse(JSON.stringify({ data: [mockResourceNode] }));
 
         const actualResult = await bridge.removeBehaviorInstance(
           mockResourceNode.rid
@@ -895,9 +924,9 @@ describe("Hue-Sync", () => {
       });
 
       it("should setup a dgram channel for a given entertainment area", async () => {
-        fetchMock.mockOnce(JSON.stringify({ data: [mockEntertainmentArea] }));
+        mockFetchResponse(JSON.stringify({ data: [mockEntertainmentArea] }));
 
-        fetchMock.mockOnce(JSON.stringify({ data: [mockResourceNode] }));
+        mockFetchResponse(JSON.stringify({ data: [mockResourceNode] }));
 
         await bridge.start(mockEntertainmentArea);
         // @ts-ignore
@@ -913,8 +942,8 @@ describe("Hue-Sync", () => {
       });
 
       it("should be able to close the dgram channel for an active entertainment area", async () => {
-        fetchMock.mockOnce(JSON.stringify({ data: [mockResourceNode] }));
-        const abortSpy = jest.spyOn(AbortController.prototype, "abort");
+        mockFetchResponse(JSON.stringify({ data: [mockResourceNode] }));
+        const abortSpy = vi.spyOn(AbortController.prototype, "abort");
 
         await bridge.stop();
 
