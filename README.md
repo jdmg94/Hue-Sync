@@ -80,13 +80,12 @@ We aim to support as many features on the [official REST API Documentation](http
 
 ## Installation
 
-use your favourite package manager to install `Hue-Sync`:
+**Requirements:** Node.js 22 or later
 
-> Node 18 or later can save on optional dependencies with `--no-optional`
-> or `--ignore-optional` for Yarn
+Use your favourite package manager to install `Hue-Sync`:
 
 ```bash
-  npm install hue-sync
+npm install hue-sync
 ```
 
 <!-- Usage -->

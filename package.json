@@ -1,8 +1,11 @@
 {
   "name": "hue-sync",
-  "version": "0.1.5",
+  "version": "0.2.0",
   "description": "A Library for Phillips Hue Clip API v2 written in Typescript",
   "main": "build/index.js",
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
@@ -23,7 +26,7 @@
   },
   "homepage": "https://github.com/jdmg94/Hue-Sync",
   "devDependencies": {
-    "@types/node": "^20.5.1",
+    "@types/node": "^22.0.0",
     "@vitest/ui": "^4.0.15",
     "prettier": "^3.0.2",
     "typescript": "^5.1.6",
@@ -34,13 +37,5 @@
   "dependencies": {
     "node-dns-sd": "^1.0.1",
     "node-dtls-client": "^1.1.1"
-  },
-  "peerDependencies": {
-    "cross-fetch": "^4.0.0"
-  },
-  "peerDependenciesMeta": {
-    "cross-fetch": {
-      "optional": true
-    }
   }
 }

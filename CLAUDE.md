@@ -58,7 +58,7 @@ The library consists of a single main class (`HueBridge`) in `src/hue.ts` with c
 
 The library patches Node's DNS lookup (`src/hue.ts:23-36`) to resolve bridge IDs to local IP addresses, enabling HTTPS with proper certificate validation. This is critical for secure communication.
 
-The DNS patch applies when the HueBridge constructor is called and returns addresses in the modern Node.js format: `[{ family: 4, address: ip }]`.
+The DNS patch applies when the HueBridge constructor is called and returns addresses in the Node.js 22+ format: `[{ family: 4, address: ip }]`.
 
 ### Entertainment API (DTLS Streaming)
 
