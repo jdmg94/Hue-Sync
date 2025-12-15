@@ -1,102 +1,45 @@
-export interface HueBridgeArgs {
-  id: string;
-  url: string;
-  credentials: BridgeClientCredentials;
-}
+/**
+ * Resource type definitions for Hue Bridge devices and services
+ */
 
-export type JSONResponse<T extends {}> = {
-  errors?: Error[];
-  data: T;
-};
+import type { ResourceNode } from "../common/types";
 
-interface BaseResouce {
+/**
+ * Base interface for all Hue resources
+ */
+interface BaseResource {
   id: string;
   id_v1?: string;
   type: string;
 }
 
+/**
+ * On/Off state
+ */
 export interface OnState {
   on: boolean;
 }
 
-export interface ResourceNode {
-  rid: string;
-  rtype:
-    | "device"
-    | "bridge_home"
-    | "room"
-    | "zone"
-    | "light"
-    | "button"
-    | "temperature"
-    | "light_level"
-    | "motion"
-    | "entertainment"
-    | "grouped_light"
-    | "device_power"
-    | "zigbee_bridge_connectivity"
-    | "zigbee_connectivity"
-    | "zgp_connectivity"
-    | "bridge"
-    | "homekit"
-    | "scene"
-    | "entertainment_configuration"
-    | "public_image"
-    | "auth_v1"
-    | "behavior_script"
-    | "behavior_instance"
-    | "geofence"
-    | "geofence_client"
-    | "geolocation"
-    | "_test";
-}
-
-export interface Position {
-  x: number;
-  y: number;
-  z: number;
-}
-
-interface EntertainmentAreaChannel {
-  channel_id: number;
-  position: Position[];
-  members: Array<{
-    index: number;
-    service: ResourceNode;
-  }>;
-}
-
-interface ServiceLocation {
-  position: Position;
-  positions: Position[];
-  service: ResourceNode;
-}
-
-export interface EntertainmentArea extends BaseResouce {
-  name: string;
-  metadata: { name: string };
-  channels: EntertainmentAreaChannel[];
-  configuration_type: string;
-  light_services: ResourceNode[];
-  locations: { service_locations: ServiceLocation[] };
-  status: string;
-  stream_proxy: {
-    mode: string;
-    node: ResourceNode;
-  };
-}
-
+/**
+ * XY color coordinates
+ */
 export interface xy {
   x: number;
   y: number;
 }
 
+/**
+ * Light dimming settings
+ */
 interface LightDimming {
   brightness: number;
   min_dim_level?: number;
 }
 
-export interface Light extends BaseResouce {
+/**
+ * Light resource
+ */
+export interface Light extends BaseResource {
   alert: { action_values: string[] };
   color: {
     gamut: { blue: xy; green: xy; red: xy };
@@ -127,6 +70,9 @@ export interface Light extends BaseResouce {
   owner: ResourceNode;
 }
 
+/**
+ * Scene action definition
+ */
 interface SceneAction {
   target: ResourceNode;
   action: {
@@ -136,7 +82,10 @@ interface SceneAction {
   };
 }
 
-export interface Scene extends BaseResouce {
+/**
+ * Scene resource
+ */
+export interface Scene extends BaseResource {
   speed?: number;
   group: ResourceNode;
   actions: SceneAction[];
@@ -154,14 +103,20 @@ export interface Scene extends BaseResouce {
   };
 }
 
-export interface Room extends BaseResouce {
+/**
+ * Room resource
+ */
+export interface Room extends BaseResource {
   children: ResourceNode[];
   grouped_services?: ResourceNode[];
   metadata: { archetype?: string; name: string };
   services?: ResourceNode[];
 }
 
-export interface Zone extends BaseResouce {
+/**
+ * Zone resource
+ */
+export interface Zone extends BaseResource {
   children: ResourceNode[];
   services?: ResourceNode[];
   grouped_services?: ResourceNode[];
@@ -171,7 +126,10 @@ export interface Zone extends BaseResouce {
   };
 }
 
-export interface Device extends BaseResouce {
+/**
+ * Device resource
+ */
+export interface Device extends BaseResource {
   services: ResourceNode[];
   metadata: {
     name?: string;
@@ -226,23 +184,35 @@ export interface Device extends BaseResouce {
   };
 }
 
-export interface HomeArea extends BaseResouce {
+/**
+ * Home area resource
+ */
+export interface HomeArea extends BaseResource {
   children: ResourceNode[];
   grouped_services: ResourceNode[];
   services: ResourceNode[];
 }
 
-export interface LightGroup extends BaseResouce {
+/**
+ * Light group resource
+ */
+export interface LightGroup extends BaseResource {
   alert: { action_values: string[] };
   on: OnState;
 }
 
-export interface GeoFenceClient extends BaseResouce {
+/**
+ * Geofence client resource
+ */
+export interface GeoFenceClient extends BaseResource {
   is_at_home?: boolean;
   name: string;
 }
 
-export interface BehaviourInstance extends BaseResouce {
+/**
+ * Behavior instance resource
+ */
+export interface BehaviourInstance extends BaseResource {
   script_id: string;
   enabled: boolean;
   state?: {};
@@ -256,28 +226,4 @@ export interface BehaviourInstance extends BaseResouce {
     target: ResourceNode;
     level: "critical" | "non_critical";
   }>;
-}
-
-export interface HueBridgeNetworkDevice {
-  id: string;
-  port?: number;
-  internalipaddress?: string;
-}
-
-export interface BridgeClientCredentials {
-  username: string;
-  clientkey: string;
-}
-
-export interface BridgeConfig {
-  name: string;
-  datastoreversion: string;
-  swversion: string;
-  apiversion: string;
-  mac: string;
-  bridgeid: string;
-  factorynew: boolean;
-  replacesbridgeid?: string;
-  modelid: string;
-  starterkitid?: string;
 }

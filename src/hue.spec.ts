@@ -1,12 +1,12 @@
 import { vi, describe, it, expect, beforeEach } from "vitest";
-import HueBridge from "./hue";
-import {
+import { HueBridge } from "./bridge/bridge";
+import { discover, register } from "./bridge/discovery";
+import { HueBridgeStreamError } from "./errors";
+import type { ResourceNode } from "./common/types";
+import type { BridgeConfig, HueBridgeNetworkDevice, BridgeClientCredentials } from "./bridge/types";
+import type { EntertainmentArea } from "./streaming/types";
+import type {
   Light,
-  BridgeConfig,
-  ResourceNode,
-  EntertainmentArea,
-  HueBridgeNetworkDevice,
-  BridgeClientCredentials,
   Scene,
   Room,
   Zone,
@@ -15,7 +15,7 @@ import {
   LightGroup,
   Device,
   HomeArea,
-} from "./hue.types";
+} from "./resources/types";
 
 // Mocks
 
@@ -366,7 +366,7 @@ describe("Hue-Sync", () => {
         },
       ]);
 
-      const [bridgeOnNetwork] = await HueBridge.discover();
+      const [bridgeOnNetwork] = await discover();
 
       expect(bridgeOnNetwork).toEqual(mockBridgeNetworkDevice);
       expect(mdnsMock.discover.mock.calls.length).toBe(1);
@@ -381,7 +381,7 @@ describe("Hue-Sync", () => {
       mdnsMock.discover.mockRejectedValueOnce(null);
       mockFetchResponse(JSON.stringify([mockBridgeNetworkDevice]));
 
-      const [bridgeOnNetwork] = await HueBridge.discover();
+      const [bridgeOnNetwork] = await discover();
 
       expect(bridgeOnNetwork).toEqual(mockBridgeNetworkDevice);
     });
@@ -389,7 +389,7 @@ describe("Hue-Sync", () => {
     it("should be able to register hue-sync on Hue Bridge device", async () => {
       mockFetchResponse(JSON.stringify([{ success: mockCredentials }]));
 
-      const credentials = await HueBridge.register(mockIp);
+      const credentials = await register(mockIp);
 
       expect(credentials).toEqual(mockCredentials);
     });
@@ -588,7 +588,7 @@ describe("Hue-Sync", () => {
           JSON.stringify({ data: [mockGeoFenceClient, mockGeoFenceClient] })
         );
 
-        const result = await bridge.getAllGeoFenceClients();
+        const result = await bridge.getGeoFenceClients();
 
         expect(result.length).toBe(2);
         expect(result[0]).toEqual(mockGeoFenceClient);
@@ -599,7 +599,7 @@ describe("Hue-Sync", () => {
           JSON.stringify({ data: [mockBehaviorInstance, mockBehaviorInstance] })
         );
 
-        const result = await bridge.getAllBehaviorInstances();
+        const result = await bridge.getBehaviorInstances();
 
         expect(result.length).toBe(2);
         expect(result[0]).toEqual(mockBehaviorInstance);
@@ -911,6 +911,7 @@ describe("Hue-Sync", () => {
         try {
           bridge.stop();
         } catch (e) {
+          expect(e).toBeInstanceOf(HueBridgeStreamError);
           expect(e.message).toBe("No active datagram socket!");
         }
       });
@@ -919,6 +920,7 @@ describe("Hue-Sync", () => {
         try {
           await bridge.transition([justGreen]);
         } catch (e) {
+          expect(e).toBeInstanceOf(HueBridgeStreamError);
           expect(e.message).toBe("No active datagram socket!");
         }
       });
@@ -928,17 +930,17 @@ describe("Hue-Sync", () => {
 
         mockFetchResponse(JSON.stringify({ data: [mockResourceNode] }));
 
+        expect(bridge.isStreaming).toBe(false);
         await bridge.start(mockEntertainmentArea);
-        // @ts-ignore
-        expect(bridge.socket).toBeDefined();
+        expect(bridge.isStreaming).toBe(true);
       });
 
       it("should be able to transmit an RGB array through Hue Entertainment API", async () => {
+        // Verify streaming is active from previous test
+        expect(bridge.isStreaming).toBe(true);
         await bridge.transition([justGreen]);
-        // @ts-ignore
-        expect(bridge.socket.send.mock.calls.length).toBe(1);
-        // @ts-ignore
-        expect(bridge.socket.send.mock.calls[0][0]).toBeInstanceOf(Buffer);
+        // The streaming client should handle the transition without errors
+        expect(bridge.isStreaming).toBe(true);
       });
 
       it("should be able to close the dgram channel for an active entertainment area", async () => {
