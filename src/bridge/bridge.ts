@@ -19,7 +19,6 @@ import type {
 import type { EntertainmentArea } from "../streaming/types";
 import { ResourceManager } from "../resources/manager";
 import { StreamingClient } from "../streaming/client";
-import { patchDNS } from "../dns";
 import { API_PATHS } from "../constants";
 
 /**
@@ -48,9 +47,6 @@ export class HueBridge {
     this.id = initial.id;
     this.url = initial.url;
     this.credentials = initial.credentials;
-
-    // Patch DNS for HTTPS support
-    patchDNS(this.id, this.url);
 
     // Initialize managers
     this.resourceManager = new ResourceManager(
